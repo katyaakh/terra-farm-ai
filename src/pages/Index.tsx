@@ -24,7 +24,7 @@ const Index = () => {
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
   };
-
+/*
   useEffect(() => {
     if (agentMessages.length === 0) {
       setTimeout(() => {
@@ -38,7 +38,7 @@ const Index = () => {
       }, 4000);
     }
   }, []);
-
+*/
   const handleModeSelect = (mode: 'simulation' | 'monitoring') => {
     navigate('/setup', { state: { mode } });
   };

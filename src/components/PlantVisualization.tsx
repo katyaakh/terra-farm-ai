@@ -1,4 +1,5 @@
 import { Crop, PlantHealth } from '@/types/game';
+import leafIcon from '@/assets/leaf-icon.svg';
 
 interface PlantVisualizationProps {
   health: PlantHealth;
@@ -32,10 +33,10 @@ const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationPro
           
           {growthStage >= 2 && (
             <div className="absolute" style={{ bottom: `${35 + growthStage * 12}px`, left: '50%', transform: 'translateX(-50%)' }}>
-              <div className="absolute w-10 h-6 rounded-full transform -translate-x-10 -translate-y-1 transition-all duration-500" style={{ backgroundColor: colors.leaves, opacity: 0.9 }} />
-              <div className="absolute w-8 h-5 rounded-full transform -translate-x-12 translate-y-3 transition-all duration-500" style={{ backgroundColor: colors.leaves, opacity: 0.85 }} />
-              <div className="absolute w-10 h-6 rounded-full transform translate-x-5 -translate-y-1 transition-all duration-500" style={{ backgroundColor: colors.leaves, opacity: 0.9 }} />
-              <div className="absolute w-8 h-5 rounded-full transform translate-x-6 translate-y-3 transition-all duration-500" style={{ backgroundColor: colors.leaves, opacity: 0.85 }} />
+              <img src={leafIcon} alt="leaf" className="absolute w-10 h-10 transform -translate-x-10 -translate-y-1 transition-all duration-500" style={{ filter: `hue-rotate(${health === 'excellent' ? '0deg' : health === 'good' ? '20deg' : health === 'fair' ? '40deg' : health === 'poor' ? '60deg' : '80deg'})`, opacity: 0.9 }} />
+              <img src={leafIcon} alt="leaf" className="absolute w-8 h-8 transform -translate-x-12 translate-y-3 transition-all duration-500 -rotate-45" style={{ filter: `hue-rotate(${health === 'excellent' ? '0deg' : health === 'good' ? '20deg' : health === 'fair' ? '40deg' : health === 'poor' ? '60deg' : '80deg'})`, opacity: 0.85 }} />
+              <img src={leafIcon} alt="leaf" className="absolute w-10 h-10 transform translate-x-5 -translate-y-1 transition-all duration-500 rotate-12" style={{ filter: `hue-rotate(${health === 'excellent' ? '0deg' : health === 'good' ? '20deg' : health === 'fair' ? '40deg' : health === 'poor' ? '60deg' : '80deg'})`, opacity: 0.9 }} />
+              <img src={leafIcon} alt="leaf" className="absolute w-8 h-8 transform translate-x-6 translate-y-3 transition-all duration-500 rotate-45" style={{ filter: `hue-rotate(${health === 'excellent' ? '0deg' : health === 'good' ? '20deg' : health === 'fair' ? '40deg' : health === 'poor' ? '60deg' : '80deg'})`, opacity: 0.85 }} />
             </div>
           )}
           
@@ -54,7 +55,7 @@ const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationPro
       {growthStage === 0 && (
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
           <div className="w-1.5 h-5" style={{ backgroundColor: colors.secondary }} />
-          <div className="w-4 h-3 rounded-full" style={{ backgroundColor: colors.leaves, opacity: 0.7 }} />
+          <img src={leafIcon} alt="leaf" className="w-6 h-6 -mt-1" style={{ filter: `hue-rotate(${health === 'excellent' ? '0deg' : health === 'good' ? '20deg' : health === 'fair' ? '40deg' : health === 'poor' ? '60deg' : '80deg'})`, opacity: 0.7 }} />
         </div>
       )}
       

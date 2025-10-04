@@ -5,10 +5,11 @@ import { Crop, Location } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
+import { Plus, Droplet, TrendingUp, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TerranautAvatar from '@/components/TerranautAvatar';
 
 interface Farm {
   id: string;
@@ -178,9 +179,23 @@ const Setup = () => {
     <div className="min-h-screen bg-gradient-to-b from-amber-900 via-yellow-800 to-amber-700 p-4 flex items-center overflow-y-auto">
       <div className="max-w-5xl mx-auto w-full">
         <div className="bg-card rounded-xl shadow-2xl p-6 animate-scale-in">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4 text-center">
-            {mode === 'simulation' ? '🎮 Game Setup' : '📊 Farm Setup'}
+          <h2 className="text-2xl font-bold text-card-foreground mb-6 text-center flex items-center justify-center gap-2">
+            <span>📊</span> Farm Setup
           </h2>
+
+          {/* Avatar and Intro Message */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-center">
+            <div className="flex justify-center">
+              <div className="w-64 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-4 flex items-center justify-center border-2 border-primary/20">
+                <TerranautAvatar />
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl p-6 border-2 border-primary/20">
+              <p className="text-lg font-medium text-card-foreground leading-relaxed">
+                Let's add the crop you want to grow and choose the period - pay attention that's based on the past data!
+              </p>
+            </div>
+          </div>
 
           {user && farms.length > 0 && (
             <div className="mb-4">
@@ -315,33 +330,67 @@ const Setup = () => {
             )}
           </div>
 
-          <div className="mb-4 p-4 bg-secondary/30 rounded-lg border border-primary/20">
+          {/* Selected Location Display */}
+          <div className="mb-6 p-4 bg-secondary/30 rounded-lg border border-primary/20">
             <label className="block text-sm font-semibold text-card-foreground mb-2">Selected Location</label>
             <p className="font-bold text-card-foreground">{selectedLocation?.name}</p>
             <p className="text-xs text-muted-foreground">{selectedLocation?.climate}</p>
             <p className="text-xs text-primary mt-1">{selectedLocation?.lat}°N, {selectedLocation?.lon}°E</p>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-card-foreground mb-2">Crop *</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Crop Selection as Cards */}
+          <div className="mb-6">
+            <label className="block text-lg font-semibold text-card-foreground mb-4">Crop *</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {crops.map((crop) => (
                 <button
                   key={crop.id}
-                  onClick={() => {
-                    setSelectedCrop(crop);
-                    const baseDate = mode === 'monitoring' ? new Date(startDate) : new Date();
-                    const harvestDay = new Date(baseDate);
-                    harvestDay.setDate(harvestDay.getDate() + crop.growthDays);
-                  }}
-                  className={`p-3 rounded-lg border-2 transition-all ${
+                  onClick={() => setSelectedCrop(crop)}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
                     selectedCrop?.id === crop.id 
-                      ? 'border-primary bg-secondary' 
+                      ? 'border-primary bg-secondary shadow-lg' 
                       : 'border-border bg-card hover:border-primary/50'
                   }`}
                 >
-                  <p className="font-bold text-card-foreground text-sm mb-1">{crop.name}</p>
-                  <p className="text-xs text-muted-foreground">{crop.growthDays} days</p>
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-bold text-card-foreground text-base mb-1">{crop.name}</h3>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {crop.growthDays} days
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-primary">{crop.marketPricing.basePrice}{crop.marketPricing.unit}</p>
+                      <p className="text-xs text-muted-foreground">Base price</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-background/50 p-2 rounded">
+                      <p className="text-muted-foreground flex items-center gap-1 mb-1">
+                        <Droplet className="w-3 h-3" />
+                        Water Need
+                      </p>
+                      <p className="font-semibold text-card-foreground">{crop.waterNeed}</p>
+                    </div>
+                    <div className="bg-background/50 p-2 rounded">
+                      <p className="text-muted-foreground flex items-center gap-1 mb-1">
+                        <TrendingUp className="w-3 h-3" />
+                        Revenue/ha
+                      </p>
+                      <p className="font-semibold text-card-foreground">€{crop.marketPricing.pricePerHectare}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <p className="text-xs text-muted-foreground">
+                      Drought Tolerance: <span className="font-semibold text-card-foreground">{crop.droughtTolerance}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Demand: <span className="font-semibold text-primary">{crop.marketPricing.demandLevel}</span>
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -406,13 +455,40 @@ const Setup = () => {
             </div>
           </div>
 
-          <button
+          {/* Show selected crop parameters before starting */}
+          {selectedCrop && (
+            <div className="mb-6 p-4 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <h3 className="font-bold text-card-foreground mb-3 flex items-center gap-2">
+                <span>🌱</span> Selected Crop Summary
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">Growth Period</p>
+                  <p className="font-bold text-card-foreground">{selectedCrop.growthDays} days</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Base Price</p>
+                  <p className="font-bold text-primary">{selectedCrop.marketPricing.basePrice}{selectedCrop.marketPricing.unit}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Water Need</p>
+                  <p className="font-bold text-card-foreground">{selectedCrop.waterNeed}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Revenue/ha</p>
+                  <p className="font-bold text-primary">€{selectedCrop.marketPricing.pricePerHectare}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button
             onClick={handleStart}
             disabled={!farmName || !farmSize || !selectedLocation || !selectedCrop}
-            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground py-3 px-6 rounded-lg font-bold text-base transition-all shadow-lg"
+            className="w-full py-6 text-lg font-semibold"
           >
-            {mode === 'simulation' ? '🚀 Start Simulation' : '📡 Start Monitoring'}
-          </button>
+            🚀 Start Simulation
+          </Button>
         </div>
       </div>
     </div>

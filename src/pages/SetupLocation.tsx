@@ -4,6 +4,7 @@ import { locations } from '@/data/gameData';
 import { Location } from '@/types/game';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import TerranautAvatar from '@/components/TerranautAvatar';
 
 const SetupLocation = () => {
@@ -120,35 +121,45 @@ const SetupLocation = () => {
               <p className="text-sm text-muted-foreground">Click to detect your coordinates</p>
             </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {userLocation && (
-                <button
-                  onClick={() => setSelectedLocation(userLocation)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    selectedLocation?.name === userLocation.name 
-                      ? 'border-primary bg-secondary shadow-lg' 
-                      : 'border-border bg-card hover:border-primary/50'
-                  }`}
-                >
-                  <p className="font-bold text-card-foreground text-sm">📍 {userLocation.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{userLocation.climate}</p>
-                  <p className="text-xs text-primary mt-1">{userLocation.lat}°N, {userLocation.lon}°E</p>
-                </button>
-              )}
-              {locations.map((loc) => (
-                <button
-                  key={loc.name}
-                  onClick={() => setSelectedLocation(loc)}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    selectedLocation?.name === loc.name 
-                      ? 'border-primary bg-secondary shadow-lg' 
-                      : 'border-border bg-card hover:border-primary/50'
-                  }`}
-                >
-                  <p className="font-bold text-card-foreground text-sm">{loc.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{loc.climate}</p>
-                </button>
-              ))}
+            {/* Location Dropdown */}
+            <div className="space-y-2">
+              <Select 
+                value={selectedLocation?.name || ''} 
+                onValueChange={(value) => {
+                  const loc = locations.find(l => l.name === value) || userLocation;
+                  if (loc) setSelectedLocation(loc);
+                }}
+              >
+                <SelectTrigger className="w-full h-auto py-3 bg-card border-2 border-border hover:border-primary/50 transition-colors">
+                  <SelectValue placeholder="Select a location from the list">
+                    {selectedLocation && (
+                      <div className="text-left">
+                        <p className="font-bold text-card-foreground">{selectedLocation.name}</p>
+                        <p className="text-xs text-muted-foreground">{selectedLocation.climate}</p>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-card border-2 border-border z-50">
+                  {userLocation && (
+                    <SelectItem value={userLocation.name} className="cursor-pointer hover:bg-secondary">
+                      <div className="py-2">
+                        <p className="font-bold text-card-foreground">📍 {userLocation.name}</p>
+                        <p className="text-xs text-muted-foreground">{userLocation.climate}</p>
+                        <p className="text-xs text-primary mt-1">{userLocation.lat}°N, {userLocation.lon}°E</p>
+                      </div>
+                    </SelectItem>
+                  )}
+                  {locations.map((loc) => (
+                    <SelectItem key={loc.name} value={loc.name} className="cursor-pointer hover:bg-secondary">
+                      <div className="py-2">
+                        <p className="font-bold text-card-foreground">{loc.name}</p>
+                        <p className="text-xs text-muted-foreground">{loc.climate}</p>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

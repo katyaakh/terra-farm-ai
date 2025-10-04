@@ -13,7 +13,17 @@ const Setup = () => {
   const [farmSize, setFarmSize] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  // For simulation mode, set dates in the past to use historical data
+  const getDefaultStartDate = () => {
+    const date = new Date();
+    if (!mode || mode === 'simulation') {
+      // Set start date 90 days in the past for historical data
+      date.setDate(date.getDate() - 90);
+    }
+    return date.toISOString().split('T')[0];
+  };
+  
+  const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [harvestDate, setHarvestDate] = useState('');
   const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
@@ -91,13 +101,13 @@ const Setup = () => {
   }, [mode, navigate]);
 
   useEffect(() => {
-    if (selectedCrop && (startDate || mode === 'simulation')) {
-      const baseDate = mode === 'monitoring' ? new Date(startDate) : new Date();
+    if (selectedCrop && startDate) {
+      const baseDate = new Date(startDate);
       const harvestDay = new Date(baseDate);
       harvestDay.setDate(harvestDay.getDate() + selectedCrop.growthDays);
       setHarvestDate(harvestDay.toISOString().split('T')[0]);
     }
-  }, [selectedCrop, startDate, mode]);
+  }, [selectedCrop, startDate]);
 
   const handleStart = () => {
     if (farmName && farmSize && selectedLocation && selectedCrop) {
@@ -239,28 +249,41 @@ const Setup = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
-            {mode === 'monitoring' && (
-              <div>
-                <label className="block text-sm font-semibold text-card-foreground mb-2">Start Date *</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    if (selectedCrop) {
-                      const harvestDay = new Date(e.target.value);
-                      harvestDay.setDate(harvestDay.getDate() + selectedCrop.growthDays);
-                      addAgentMessage(`📅 Updated! With this start date, your ${selectedCrop.name} will be ready on ${harvestDay.toLocaleDateString()}`, 'info');
-                    }
-                  }}
-                  className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
-                />
-              </div>
-            )}
-
-            <div className={mode === 'monitoring' ? '' : 'col-span-2'}>
+            <div>
               <label className="block text-sm font-semibold text-card-foreground mb-2">
-                Expected Harvest Date 
+                {mode === 'simulation' ? 'Planting Date (Historical) *' : 'Start Date *'}
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                max={new Date().toISOString().split('T')[0]}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (selectedCrop) {
+                    const harvestDay = new Date(e.target.value);
+                    harvestDay.setDate(harvestDay.getDate() + selectedCrop.growthDays);
+                    const harvestDateStr = harvestDay.toISOString().split('T')[0];
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (harvestDateStr > today && mode === 'simulation') {
+                      addAgentMessage(`⚠️ Harvest date would be in the future. For simulation, both dates must be in the past to use real historical data.`, 'warning');
+                    } else {
+                      addAgentMessage(`📅 Updated! With this start date, your ${selectedCrop.name} harvest was on ${harvestDay.toLocaleDateString()}`, 'info');
+                    }
+                  }
+                }}
+                className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
+              />
+              {mode === 'simulation' && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  📆 Must be in the past to use real NASA historical data
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-card-foreground mb-2">
+                {mode === 'simulation' ? 'Harvest Date (Historical)' : 'Expected Harvest Date'}
                 {selectedCrop && (
                   <span className="text-primary ml-1">
                     (Auto: +{selectedCrop.growthDays} days)
@@ -278,6 +301,9 @@ const Setup = () => {
               {selectedCrop && harvestDate && (
                 <p className="text-xs text-primary mt-1">
                   📅 {new Date(harvestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(harvestDate) > new Date() && mode === 'simulation' && (
+                    <span className="text-destructive ml-2">⚠️ Future date!</span>
+                  )}
                 </p>
               )}
             </div>

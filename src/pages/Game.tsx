@@ -32,15 +32,63 @@ const Game = () => {
   const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
   const [activityLog, setActivityLog] = useState<GameLog[]>([]);
+  const [historicalWeather, setHistoricalWeather] = useState<any[]>([]);
+  const [weatherLoaded, setWeatherLoaded] = useState(false);
 
+  // Fetch historical weather data on component mount
   useEffect(() => {
     if (!state) {
       navigate('/');
       return;
     }
+    
     addAgentMessage(`🌱 Welcome to ${state.farmName}! Your ${state.crop.name} journey begins. I'll guide you with NASA satellite data!`, 'success');
     addActivityLog(`Day 1: ${state.crop.name} planting started at ${state.location.name}`, 'info');
+    
+    // Fetch real historical weather data
+    fetchHistoricalWeatherData();
   }, []);
+
+  const fetchHistoricalWeatherData = async () => {
+    if (!state) return;
+    
+    try {
+      addAgentMessage('📡 Fetching real NASA historical weather data...', 'info');
+      
+      const { data, error } = await supabase.functions.invoke('fetch-weather-data', {
+        body: {
+          lat: state.location.lat,
+          lon: state.location.lon,
+          start_date: state.startDate,
+          end_date: state.harvestDate,
+          mode: 'history'
+        }
+      });
+
+      if (error) {
+        console.error('Weather data error:', error);
+        addAgentMessage(`❌ Error fetching weather data: ${error.message}`, 'error');
+        return;
+      }
+
+      if (data?.data) {
+        console.log('Historical weather data received:', data.data);
+        setHistoricalWeather(data.data);
+        setWeatherLoaded(true);
+        
+        // Set initial conditions from first day
+        if (data.data.length > 0) {
+          const firstDay = data.data[0];
+          setTemperature((firstDay.Tmax_C + firstDay.Tmin_C) / 2);
+          setSoilMoisture(firstDay.Rain_mm > 5 ? 80 : 60);
+          addAgentMessage(`✅ Loaded ${data.data.length} days of real NASA weather data from ${state.startDate} to ${state.harvestDate}`, 'success');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      addAgentMessage(`❌ Failed to fetch weather data: ${error}`, 'error');
+    }
+  };
 
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
@@ -109,15 +157,40 @@ const Game = () => {
   };
 
   const simulateDay = () => {
-    // Simulate weather and conditions based on NASA data patterns
-    const tempVariation = Math.random() * 10 - 5;
-    const newTemp = Math.max(15, Math.min(40, temperature + tempVariation));
-    setTemperature(newTemp);
-
-    // Simulate soil moisture depletion
-    const moistureLoss = Math.random() * 5 + 2;
-    const newMoisture = Math.max(0, soilMoisture - moistureLoss);
-    setSoilMoisture(newMoisture);
+    // Use real historical weather data if available
+    let newTemp = temperature;
+    let newMoisture = soilMoisture;
+    
+    if (weatherLoaded && historicalWeather.length > 0) {
+      const dayIndex = Math.min(currentDay - 1, historicalWeather.length - 1);
+      const dayWeather = historicalWeather[dayIndex];
+      
+      // Use real NASA weather data
+      newTemp = (dayWeather.Tmax_C + dayWeather.Tmin_C) / 2;
+      setTemperature(newTemp);
+      
+      // Update soil moisture based on real rainfall
+      if (dayWeather.Rain_mm > 0) {
+        newMoisture = Math.min(100, soilMoisture + dayWeather.Rain_mm * 2);
+        addAgentMessage(`🌧️ Real NASA data: ${dayWeather.Rain_mm.toFixed(1)}mm rainfall detected!`, 'success');
+        addActivityLog(`Rain: ${dayWeather.Rain_mm.toFixed(1)}mm (NASA POWER data)`, 'info');
+      } else {
+        // Natural depletion
+        newMoisture = Math.max(0, soilMoisture - 3);
+      }
+      setSoilMoisture(newMoisture);
+      
+      addAgentMessage(`🌡️ Real weather: Temp ${newTemp.toFixed(1)}°C, Rain ${dayWeather.Rain_mm.toFixed(1)}mm, RH ${dayWeather.RH_pct.toFixed(0)}%`, 'info');
+    } else {
+      // Fallback to simulated weather if no real data
+      const tempVariation = Math.random() * 10 - 5;
+      newTemp = Math.max(15, Math.min(40, temperature + tempVariation));
+      setTemperature(newTemp);
+      
+      const moistureLoss = Math.random() * 5 + 2;
+      newMoisture = Math.max(0, soilMoisture - moistureLoss);
+      setSoilMoisture(newMoisture);
+    }
 
     // Update NDVI based on health
     const ndviChange = (newMoisture > 40 && newTemp > 20 && newTemp < 35) ? 0.02 : -0.01;

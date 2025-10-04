@@ -3,11 +3,32 @@ import { useState, useEffect } from 'react';
 import { locations, crops } from '@/data/gameData';
 import { Crop, Location, AgentMessage } from '@/types/game';
 import AgentChat from '@/components/AgentChat';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface Farm {
+  id: string;
+  farm_name: string;
+  farm_size: number;
+  created_at: string;
+}
 
 const Setup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mode = location.state?.mode as string | null;
+  const { user } = useAuth();
+  
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [selectedFarmId, setSelectedFarmId] = useState<string>('');
+  const [newFarmName, setNewFarmName] = useState('');
+  const [newFarmSize, setNewFarmSize] = useState('');
+  const [isNewFarmDialogOpen, setIsNewFarmDialogOpen] = useState(false);
   
   const [farmName, setFarmName] = useState('');
   const [farmSize, setFarmSize] = useState('');
@@ -98,7 +119,82 @@ const Setup = () => {
       : "Perfect! Let's connect your real farm data with NASA satellites for daily monitoring and forecasts!", 
       'success'
     );
-  }, [mode, navigate]);
+    
+    if (user) {
+      loadFarms();
+    }
+  }, [mode, navigate, user]);
+
+  const loadFarms = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('farms')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading farms:', error);
+      return;
+    }
+
+    setFarms(data || []);
+    if (data && data.length > 0 && !selectedFarmId) {
+      setSelectedFarmId(data[0].id);
+      const farm = data[0];
+      setFarmName(farm.farm_name);
+      setFarmSize(farm.farm_size.toString());
+    }
+  };
+
+  const createNewFarm = async () => {
+    if (!user) {
+      toast.error('Please log in to create a farm');
+      return;
+    }
+
+    if (!newFarmName.trim() || !newFarmSize) {
+      toast.error('Please enter farm name and size');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('farms')
+      .insert({
+        user_id: user.id,
+        farm_name: newFarmName.trim(),
+        farm_size: parseFloat(newFarmSize)
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating farm:', error);
+      toast.error('Failed to create farm');
+      return;
+    }
+
+    toast.success('Farm created successfully!');
+    setFarms([data, ...farms]);
+    setSelectedFarmId(data.id);
+    setFarmName(data.farm_name);
+    setFarmSize(data.farm_size.toString());
+    setNewFarmName('');
+    setNewFarmSize('');
+    setIsNewFarmDialogOpen(false);
+    
+    addAgentMessage(`Great! Your farm "${data.farm_name}" (${data.farm_size} hectares) has been created. Now let's set up your crop and location.`, 'success');
+  };
+
+  const handleFarmChange = (farmId: string) => {
+    setSelectedFarmId(farmId);
+    const farm = farms.find(f => f.id === farmId);
+    if (farm) {
+      setFarmName(farm.farm_name);
+      setFarmSize(farm.farm_size.toString());
+    }
+  };
 
   useEffect(() => {
     if (selectedCrop && startDate) {
@@ -109,8 +205,32 @@ const Setup = () => {
     }
   }, [selectedCrop, startDate]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (farmName && farmSize && selectedLocation && selectedCrop) {
+      // If user is logged in, save farm and create game session
+      if (user) {
+        try {
+          const { error } = await supabase.from('game_sessions').insert({
+            user_id: user.id,
+            farm_id: selectedFarmId || null,
+            location: selectedLocation.name,
+            latitude: selectedLocation.lat,
+            longitude: selectedLocation.lon,
+            crop_type: selectedCrop.name,
+            start_date: startDate,
+            current_day: 0,
+            water_reserve: 100,
+            budget: 10000,
+            env_score: 100,
+          });
+
+          if (error) throw error;
+        } catch (error) {
+          console.error('Error creating game session:', error);
+          toast.error('Failed to save game session');
+        }
+      }
+
       navigate('/game', {
         state: {
           mode,
@@ -133,28 +253,137 @@ const Setup = () => {
             {mode === 'simulation' ? '🎮 Game Setup' : '📊 Farm Setup'}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Name *</label>
-              <input
-                type="text"
-                value={farmName}
-                onChange={(e) => setFarmName(e.target.value)}
-                placeholder="e.g., Green Valley Farm"
-                className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
-              />
+          {user && farms.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-card-foreground mb-2">Select Farm</label>
+              <div className="flex gap-2">
+                <Select value={selectedFarmId} onValueChange={handleFarmChange}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select a farm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {farms.map((farm) => (
+                      <SelectItem key={farm.id} value={farm.id}>
+                        {farm.farm_name} - {farm.farm_size} hectares
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Dialog open={isNewFarmDialogOpen} onOpenChange={setIsNewFarmDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Farm</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Name</label>
+                        <input
+                          type="text"
+                          value={newFarmName}
+                          onChange={(e) => setNewFarmName(e.target.value)}
+                          placeholder="e.g., Green Valley Farm"
+                          className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Size (hectares)</label>
+                        <input
+                          type="number"
+                          value={newFarmSize}
+                          onChange={(e) => setNewFarmSize(e.target.value)}
+                          placeholder="e.g., 10"
+                          min="0.1"
+                          step="0.1"
+                          className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                      <Button onClick={createNewFarm} className="w-full">
+                        Create Farm
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Size (hectares) *</label>
-              <input
-                type="number"
-                value={farmSize}
-                onChange={(e) => setFarmSize(e.target.value)}
-                placeholder="e.g., 50"
-                className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
-              />
+          {user && farms.length === 0 && (
+            <div className="mb-4 p-4 bg-muted rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground mb-3">You don't have any farms yet. Create your first farm!</p>
+              <Dialog open={isNewFarmDialogOpen} onOpenChange={setIsNewFarmDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Farm
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Farm</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Name</label>
+                      <input
+                        type="text"
+                        value={newFarmName}
+                        onChange={(e) => setNewFarmName(e.target.value)}
+                        placeholder="e.g., Green Valley Farm"
+                        className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Size (hectares)</label>
+                      <input
+                        type="number"
+                        value={newFarmSize}
+                        onChange={(e) => setNewFarmSize(e.target.value)}
+                        placeholder="e.g., 10"
+                        min="0.1"
+                        step="0.1"
+                        className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <Button onClick={createNewFarm} className="w-full">
+                      Create Farm
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {!user && (
+              <>
+                <div>
+                  <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Name *</label>
+                  <input
+                    type="text"
+                    value={farmName}
+                    onChange={(e) => setFarmName(e.target.value)}
+                    placeholder="e.g., Green Valley Farm"
+                    className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-card-foreground mb-2">Farm Size (hectares) *</label>
+                  <input
+                    type="number"
+                    value={farmSize}
+                    onChange={(e) => setFarmSize(e.target.value)}
+                    placeholder="e.g., 50"
+                    className="w-full p-3 text-sm border-2 border-input bg-background text-foreground rounded-lg focus:border-primary focus:outline-none transition-colors"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="mb-4">

@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      farms: {
+        Row: {
+          created_at: string
+          farm_name: string
+          farm_size: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          farm_name: string
+          farm_size: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          farm_name?: string
+          farm_size?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_sessions: {
         Row: {
           budget: number
@@ -22,6 +49,7 @@ export type Database = {
           crop_type: string
           current_day: number
           env_score: number
+          farm_id: string | null
           final_score: number | null
           id: string
           latitude: number
@@ -39,6 +67,7 @@ export type Database = {
           crop_type: string
           current_day?: number
           env_score?: number
+          farm_id?: string | null
           final_score?: number | null
           id?: string
           latitude: number
@@ -56,6 +85,7 @@ export type Database = {
           crop_type?: string
           current_day?: number
           env_score?: number
+          farm_id?: string | null
           final_score?: number | null
           id?: string
           latitude?: number
@@ -66,7 +96,15 @@ export type Database = {
           user_id?: string
           water_reserve?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_farm_id_fkey"
+            columns: ["farm_id"]
+            isOneToOne: false
+            referencedRelation: "farms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

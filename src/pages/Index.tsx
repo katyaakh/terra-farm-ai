@@ -25,7 +25,7 @@ const Index = () => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
   };
 
-  useEffect(() => {
+/*  useEffect(() => {
     if (agentMessages.length === 0) {
       setTimeout(() => {
         addAgentMessage("👋 Hello! I'm Terra, your AI farming advisor powered by NASA satellite data!");
@@ -37,7 +37,7 @@ const Index = () => {
         addAgentMessage("Both tools are FREE and use real NASA satellite data (SMAP, MODIS, GPM). You can chat with me anytime for advice and forecasts!");
       }, 4000);
     }
-  }, []);
+  }, []);*/
 
   const handleModeSelect = (mode: 'simulation' | 'monitoring') => {
     navigate('/setup', { state: { mode } });

@@ -13,6 +13,16 @@ export interface Crop {
   profit: number;
   growthDays: number;
   optimalTemp: [number, number];
+  marketPricing: {
+    basePrice: number;
+    unit: string;
+    premiumMultiplier: number;
+    goodMultiplier: number;
+    averageMultiplier: number;
+    poorMultiplier: number;
+    demandLevel: 'High' | 'Medium' | 'Low';
+    pricePerHectare: number;
+  };
 }
 
 export interface GameLog {

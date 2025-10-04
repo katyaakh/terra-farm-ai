@@ -35,6 +35,7 @@ const Game = () => {
   const [historicalWeather, setHistoricalWeather] = useState<any[]>([]);
   const [weatherLoaded, setWeatherLoaded] = useState(false);
   const [satelliteDataLoaded, setSatelliteDataLoaded] = useState(false);
+  const [dataSource, setDataSource] = useState<'MODIS_REAL' | 'MODIS_SIMULATED' | null>(null);
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -127,9 +128,12 @@ const Game = () => {
           const firstDay = data.data[0];
           setNdvi(firstDay.ndvi);
           setSoilMoisture(firstDay.soil_moisture * 100); // Convert to percentage
+          setTemperature(firstDay.lst_celsius || (firstDay.lst_kelvin - 273.15));
+          setDataSource(firstDay.data_source);
           
+          const sourceLabel = firstDay.data_source === 'MODIS_REAL' ? '🟢 Real NASA Data' : '🟡 Synthetic Data';
           addAgentMessage(
-            `✅ Loaded ${data.records_created} days of satellite data (NDVI, LST, soil moisture) from ${state.startDate} to ${state.harvestDate}`, 
+            `✅ ${sourceLabel}: Loaded ${data.records_created} days (NDVI, LST, soil moisture)`, 
             'success'
           );
         }
@@ -426,7 +430,14 @@ const Game = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">Temp</span>
-              <span className="text-xs font-bold">{temperature.toFixed(1)}°C</span>
+              <span className="text-xs font-bold flex items-center gap-1">
+                {temperature.toFixed(1)}°C
+                {dataSource && (
+                  <span className="text-[10px]">
+                    {dataSource === 'MODIS_REAL' ? '🟢' : '🟡'}
+                  </span>
+                )}
+              </span>
             </div>
           </div>
         </div>

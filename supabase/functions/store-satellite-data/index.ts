@@ -44,6 +44,7 @@ function generateSatelliteDataForPeriod(startDate: string, endDate: string) {
       date: dateStr,
       ndvi: Number(ndvi.toFixed(3)),
       lst_kelvin: Number(lst.toFixed(2)),
+      lst_celsius: Number((lst - 273.15).toFixed(2)),
       soil_moisture: Number(soilMoisture.toFixed(3)),
       data_source: 'MODIS_SIMULATED'
     });

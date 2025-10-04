@@ -251,7 +251,7 @@ const RealMonitoring = ({
             {/* Comparison Table */}
             <Card>
               <CardHeader>
-                <CardTitle>I ca</CardTitle>
+                <CardTitle>Environmental Conditions</CardTitle>
                 <CardDescription>Real vs. Optimal comparison</CardDescription>
               </CardHeader>
               <CardContent>

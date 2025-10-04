@@ -539,7 +539,7 @@ const Game = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
+      <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {/* Plant Visualization - Smaller */}
         <div className="w-48 h-48 flex items-center justify-center">
           <PlantVisualization 

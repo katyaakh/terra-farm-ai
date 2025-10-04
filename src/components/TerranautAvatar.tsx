@@ -1,2 +1,4 @@
-const TerranautAvatar = () => {};
+const TerranautAvatar = () => {
+  return null;
+};
 export default TerranautAvatar;

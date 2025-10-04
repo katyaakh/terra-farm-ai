@@ -82,38 +82,6 @@ const Index = () => {
             {/* Terranaut Character */}
             <div className="flex flex-col items-center mb-8">
               <TerranautAvatar />
-              <div className="mt-6 max-w-2xl space-y-3">
-                {agentMessages.slice(-3).map((msg, idx) => (
-                  <div key={idx} className={`rounded-2xl p-4 shadow-lg animate-fade-in border-2 ${
-                    idx === 0 ? 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200' :
-                    idx === 1 ? 'bg-gradient-to-r from-green-50 to-blue-50 border-green-200' :
-                    'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200'
-                  }`}>
-                    <p className="text-sm text-gray-800 font-medium text-center">
-                      {msg.text.includes("Terra") ? (
-                        <>
-                          {msg.text.split("Terra")[0]}
-                          <span className="font-bold text-primary">Terra</span>
-                          {msg.text.split("Terra")[1]}
-                        </>
-                      ) : (
-                        msg.text
-                      )}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Agent Chat - Inline below avatar */}
-              <div className="mt-6">
-                <AgentChat 
-                  showAgent={showAgent}
-                  setShowAgent={setShowAgent}
-                  agentMessages={agentMessages}
-                  mode={null}
-                  screen="welcome"
-                />
-              </div>
             </div>
 
             {/* Mode Selection */}

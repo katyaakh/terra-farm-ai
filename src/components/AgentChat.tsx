@@ -12,7 +12,7 @@ interface AgentChatProps {
 
 const AgentChat = ({ showAgent, setShowAgent, agentMessages, mode, screen, setShowDataEntry }: AgentChatProps) => {
   return (
-    <div className="fixed bottom-2 right-2 z-50">
+    <div className="inline-block">
       {showAgent && agentMessages.length > 0 ? (
         <div className="bg-white rounded-lg shadow-2xl w-80 max-h-[40vh] flex flex-col">
           <div className="bg-gradient-to-r from-primary to-accent text-white p-2 rounded-t-lg flex items-center justify-between">

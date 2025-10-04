@@ -114,6 +114,17 @@ const Index = () => {
                   </div>
                 ))}
               </div>
+              
+              {/* Agent Chat - Inline below avatar */}
+              <div className="mt-6">
+                <AgentChat 
+                  showAgent={showAgent}
+                  setShowAgent={setShowAgent}
+                  agentMessages={agentMessages}
+                  mode={null}
+                  screen="welcome"
+                />
+              </div>
             </div>
 
             {/* Mode Selection */}
@@ -199,14 +210,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      
-      <AgentChat 
-        showAgent={showAgent}
-        setShowAgent={setShowAgent}
-        agentMessages={agentMessages}
-        mode={null}
-        screen="welcome"
-      />
     </div>
   );
 };

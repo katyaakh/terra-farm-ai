@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.interpret-data]
 verify_jwt = false
+
+[functions.ai-agent-chat]
+verify_jwt = false

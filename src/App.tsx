@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import SetupLocation from "./pages/SetupLocation";
 import Setup from "./pages/Setup";
 import Game from "./pages/Game";
 import Results from "./pages/Results";
@@ -21,7 +22,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/setup" element={<Setup />} />
+          <Route path="/setup" element={<SetupLocation />} />
+          <Route path="/setup/farm" element={<Setup />} />
           <Route path="/game" element={<Game />} />
           <Route path="/results" element={<Results />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

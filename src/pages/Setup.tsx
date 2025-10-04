@@ -47,7 +47,7 @@ const Setup = () => {
   const [harvestDate, setHarvestDate] = useState('');
 
   useEffect(() => {
-    if (!mode || !selectedLocation) {
+    if (!selectedLocation) {
       navigate('/setup');
       return;
     }
@@ -55,7 +55,7 @@ const Setup = () => {
     if (user) {
       loadFarms();
     }
-  }, [mode, selectedLocation, navigate, user]);
+  }, [selectedLocation, navigate, user]);
 
   const loadFarms = async () => {
     if (!user) return;

@@ -51,7 +51,7 @@ const Auth = () => {
 
         toast({
           title: "Account created!",
-          description: "Welcome to TerraSense!",
+          description: "Welcome to Terranaut!",
         });
         navigate('/');
       }
@@ -75,7 +75,7 @@ const Auth = () => {
           </CardTitle>
           <CardDescription className="text-center">
             {isLogin
-              ? 'Sign in to continue to TerraSense'
+              ? 'Sign in to continue to Terranaut'
               : 'Sign up to start farming smarter with NASA data'}
           </CardDescription>
         </CardHeader>

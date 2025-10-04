@@ -14,11 +14,12 @@ const Index = () => {
   const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
+  // Skip auth requirement - commented out
+  // useEffect(() => {
+  //   if (!loading && !user) {
+  //     navigate('/auth');
+  //   }
+  // }, [user, loading, navigate]);
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
@@ -65,7 +66,7 @@ const Index = () => {
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-2">
                 <div className="flex-1"></div>
-                <h1 className="text-4xl font-bold tracking-tight flex-1">TerraSense</h1>
+                <h1 className="text-4xl font-bold tracking-tight flex-1">Terranaut</h1>
                 <div className="flex-1 flex justify-end">
                   <Button
                     variant="ghost"

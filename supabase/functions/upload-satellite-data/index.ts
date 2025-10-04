@@ -29,7 +29,7 @@ interface SatelliteDataRow {
 }
 
 interface UploadRequest {
-  game_session_id: string;
+  game_session_id?: string; // Optional - will auto-detect if not provided
   satellite_data: SatelliteDataRow[];
 }
 
@@ -52,24 +52,48 @@ serve(async (req) => {
     }
 
     const body: UploadRequest = await req.json();
-    console.log(`Processing satellite data upload for session: ${body.game_session_id}`);
+    
+    // Auto-detect game session if not provided
+    let gameSessionId = body.game_session_id;
+    
+    if (!gameSessionId) {
+      console.log('No game_session_id provided, finding active session for user:', user.id);
+      
+      const { data: activeSession, error: findError } = await supabaseClient
+        .from('game_sessions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('completed', false)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (findError || !activeSession) {
+        throw new Error('No active game session found. Please start a game first.');
+      }
+      
+      gameSessionId = activeSession.id;
+      console.log(`Auto-detected game session: ${gameSessionId}`);
+    } else {
+      console.log(`Using provided game_session_id: ${gameSessionId}`);
+      
+      // Verify the game session belongs to the user
+      const { data: session, error: sessionError } = await supabaseClient
+        .from('game_sessions')
+        .select('id, user_id')
+        .eq('id', gameSessionId)
+        .single();
 
-    // Verify the game session belongs to the user
-    const { data: session, error: sessionError } = await supabaseClient
-      .from('game_sessions')
-      .select('id, user_id')
-      .eq('id', body.game_session_id)
-      .single();
-
-    if (sessionError || !session || session.user_id !== user.id) {
-      throw new Error('Game session not found or unauthorized');
+      if (sessionError || !session || session.user_id !== user.id) {
+        throw new Error('Game session not found or unauthorized');
+      }
     }
 
     // Delete existing satellite data for this session
     const { error: deleteError } = await supabaseClient
       .from('satellite_data')
       .delete()
-      .eq('game_session_id', body.game_session_id);
+      .eq('game_session_id', gameSessionId);
 
     if (deleteError) {
       console.error('Error deleting old data:', deleteError);
@@ -78,7 +102,7 @@ serve(async (req) => {
 
     // Transform and insert new satellite data
     const satelliteRecords = body.satellite_data.map(row => ({
-      game_session_id: body.game_session_id,
+      game_session_id: gameSessionId,
       date: row.date,
       ndvi: row.NDVI_obs || row.NDVI_syn,
       lst_kelvin: row.LST_syn ? row.LST_syn + 273.15 : null, // Convert Celsius to Kelvin

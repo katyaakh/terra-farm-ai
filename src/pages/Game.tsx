@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
 import FullWidthChat from '@/components/FullWidthChat';
-import { Droplet, Leaf, Zap, Copy, CheckCircle2, Upload } from 'lucide-react';
+import { Droplet, Leaf, Zap, Upload } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +39,6 @@ const Game = () => {
   const [weatherLoaded, setWeatherLoaded] = useState(false);
   const [satelliteDataLoaded, setSatelliteDataLoaded] = useState(false);
   const [dataSource, setDataSource] = useState<'MODIS_REAL' | 'MODIS_SIMULATED' | null>(null);
-  const [sessionIdCopied, setSessionIdCopied] = useState(false);
   const [showFallbackButton, setShowFallbackButton] = useState(false);
   const [isGeneratingSynthetic, setIsGeneratingSynthetic] = useState(false);
   const [dataCheckAttempts, setDataCheckAttempts] = useState(0);
@@ -417,17 +416,6 @@ const Game = () => {
     }
   };
 
-  const copySessionId = () => {
-    if (state?.gameSessionId) {
-      navigator.clipboard.writeText(state.gameSessionId);
-      setSessionIdCopied(true);
-      toast({
-        title: "Session ID Copied!",
-        description: "You can now paste this in your Colab notebook.",
-      });
-      setTimeout(() => setSessionIdCopied(false), 2000);
-    }
-  };
 
   if (!state) return null;
 
@@ -458,48 +446,32 @@ const Game = () => {
       </div>
 
       {/* Game Session ID Card */}
-      {state.gameSessionId && (
+      {/* Data Source Badge */}
+      {dataSource && (
         <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
           <Card className="border-primary/20">
-            <CardHeader className="p-3 pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Upload className="w-4 h-4 text-primary" />
-                  <CardTitle className="text-sm">Game Session ID</CardTitle>
-                </div>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-muted-foreground">Data Source:</span>
                 <Badge variant={dataSource === 'MODIS_REAL' ? 'default' : 'secondary'} className="text-xs">
-                  {dataSource === 'MODIS_REAL' ? '🟢 Real' : '🟡 Synthetic'}
+                  {dataSource === 'MODIS_REAL' ? '🟢 Real NASA Data' : '🟡 Synthetic Data'}
                 </Badge>
               </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono truncate">
-                  {state.gameSessionId}
-                </code>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 w-7 p-0"
-                  onClick={copySessionId}
-                >
-                  {sessionIdCopied ? (
-                    <CheckCircle2 className="w-3 h-3 text-primary" />
-                  ) : (
-                    <Copy className="w-3 h-3" />
-                  )}
-                </Button>
-              </div>
               {showFallbackButton && !satelliteDataLoaded && (
-                <Button 
-                  className="w-full mt-3" 
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => fetchAndStoreSatelliteData(true)}
-                  disabled={isGeneratingSynthetic}
-                >
-                  {isGeneratingSynthetic ? 'Generating...' : '⚡ Generate Synthetic Data'}
-                </Button>
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    No real data detected. Generate synthetic data to continue:
+                  </p>
+                  <Button 
+                    className="w-full" 
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => fetchAndStoreSatelliteData(true)}
+                    disabled={isGeneratingSynthetic}
+                  >
+                    {isGeneratingSynthetic ? 'Generating...' : '⚡ Generate Synthetic Data'}
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

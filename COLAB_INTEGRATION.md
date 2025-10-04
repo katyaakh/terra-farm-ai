@@ -1,146 +1,263 @@
-# Google Colab Integration Guide
+# 🛰️ Upload Real NASA Satellite Data from Google Colab
 
-This guide explains how to upload real NASA satellite data to your Terranaut game session using Google Colab.
+This guide shows you how to upload **real NASA satellite data** (MODIS & SMAP) from Google Colab to your Terranaut game.
 
-## Overview
+---
 
-The game supports both synthetic (simulated) and real NASA satellite data. To use real satellite data from NASA POWER and MODIS, you can upload it via a Google Colab notebook.
+## 📋 Prerequisites
 
-## Prerequisites
+Before you start, make sure you have:
 
-- A running game session (you'll get a `game_session_id` when you start playing)
-- Access to Google Colab
-- Internet connection
+1. ✅ **Started a game** in Terranaut (the upload will automatically go to your active game)
+2. ✅ **Google Colab** access (free account is fine)
+3. ✅ **Your authentication token** from the Terranaut app
 
-## Step 1: Get Your Game Session ID
+---
 
-When you start a game, you'll see a card at the top with your unique `game_session_id`. It looks like:
+## 🔑 Step 1: Get Your Authentication Token
 
+Your auth token lets Google Colab securely upload data to your game.
+
+### How to get it:
+
+1. **Open the Terranaut app** in your browser
+2. **Press `F12`** to open Developer Tools
+3. **Click the "Console" tab**
+4. **Type this command** and press Enter:
+   ```javascript
+   localStorage.getItem('sb-promrhlttjogqgevangf-auth-token')
+   ```
+5. **Copy the token** (it's a long string in quotes - copy WITHOUT the quotes)
+
+**Example output:**
 ```
-64f3f068-6aa6-4203-bd2c-c1f30d1178e1
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
+Copy everything **between** the quotes.
 
-Click the copy button to copy this ID to your clipboard.
+---
 
-## Step 2: Upload Endpoint
+## 🐍 Step 2: Prepare Your Google Colab Notebook
 
-The game provides an edge function to receive satellite data uploads:
+Open a new Google Colab notebook and add these cells:
 
-**Endpoint URL:**
-```
-https://promrhlttjogqgevangf.supabase.co/functions/v1/upload-satellite-data
-```
-
-**Authentication:**
-You'll need to authenticate using your Lovable Cloud credentials (handled automatically if you're logged in).
-
-## Step 3: Python Code for Colab
-
-Use this Python code snippet in your Google Colab notebook:
+### Cell 1: Install Dependencies
 
 ```python
-import requests
+!pip install requests pandas numpy -q
+```
+
+**👆 Run this cell first** (click the play button or press Shift+Enter)
+
+---
+
+### Cell 2: Set Your Authentication Token
+
+```python
+# 🔑 PASTE YOUR AUTH TOKEN HERE (between the quotes)
+AUTH_TOKEN = "paste_your_token_here"
+
+# 🌐 API Configuration (don't change these)
+UPLOAD_URL = "https://promrhlttjogqgevangf.supabase.co/functions/v1/upload-satellite-data"
+ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByb21yaGx0dGpvZ3FnZXZhbmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1NTYzNzYsImV4cCI6MjA3NTEzMjM3Nn0.B9gN3_fAn_q6sgoaT2oToOjmnf6UnmWaESU4j7r05P4"
+
+print("✅ Configuration loaded!")
+```
+
+**👆 Replace `paste_your_token_here` with your actual token from Step 1**
+
+---
+
+### Cell 3: Prepare Your Satellite Data
+
+```python
 import pandas as pd
 from datetime import datetime, timedelta
 
-# Your game session ID (paste it here)
-GAME_SESSION_ID = "64f3f068-6aa6-4203-bd2c-c1f30d1178e1"
+# 📊 Example: Create sample satellite data
+# Replace this with your real NASA data processing!
 
-# API endpoint
-UPLOAD_URL = "https://promrhlttjogqgevangf.supabase.co/functions/v1/upload-satellite-data"
-
-# Your authentication token (get from browser localStorage)
-AUTH_TOKEN = "your-auth-token-here"
-
-# Prepare your satellite data as a list of records
 satellite_data = [
     {
-        "date": "2025-07-06",
-        "ndvi": 0.72,
-        "lst_kelvin": 295.5,
-        "lst_celsius": 22.35,
-        "soil_moisture": 0.45,
-        "data_source": "MODIS_REAL",
-        "quality_flags": {"cloud_cover": 5, "data_quality": "good"}
+        "date": "2025-01-01",
+        "NDVI_obs": 0.72,          # Observed NDVI from MODIS
+        "NDVI_syn": 0.72,          # Synthesized/interpolated NDVI
+        "NDVI_is_synth": False,    # Is this value interpolated?
+        "NDVI_age_days": 0,        # How old is the observation?
+        
+        "LST_obs": 22.5,           # Observed temperature (°C)
+        "LST_syn": 22.5,
+        "LST_is_synth": False,
+        "LST_age_days": 0,
+        
+        "SM_obs": 0.45,            # Observed soil moisture (0-1 scale)
+        "SM_syn": 0.45,
+        "SM_is_synth": False,
+        "SM_age_days": 0,
+        
+        # Optional weather data
+        "Tmax_C": 28.0,
+        "Tmin_C": 18.0,
+        "RH_pct": 65.0,
+        "Wind_ms": 3.5,
+        "Rain_mm": 0.0,
+        "SWrad_MJm2": 22.5
     },
-    # Add more records here...
+    # Add more days here...
+    {
+        "date": "2025-01-02",
+        "NDVI_obs": None,          # Missing observed value
+        "NDVI_syn": 0.71,          # Interpolated value used
+        "NDVI_is_synth": True,     # Marked as interpolated
+        "NDVI_age_days": 3,        # 3 days old observation
+        
+        "LST_obs": 23.0,
+        "LST_syn": 23.0,
+        "LST_is_synth": False,
+        "LST_age_days": 0,
+        
+        "SM_obs": 0.43,
+        "SM_syn": 0.43,
+        "SM_is_synth": False,
+        "SM_age_days": 0,
+    },
 ]
 
-# Upload the data
+print(f"📊 Prepared {len(satellite_data)} days of satellite data")
+```
+
+**👆 This is where you add your NASA satellite data!**
+
+Replace the example data with your actual MODIS/SMAP processing results.
+
+---
+
+### Cell 4: Upload Data to Terranaut
+
+```python
+import requests
+
+# 📤 Upload the data
 headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {AUTH_TOKEN}",
-    "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByb21yaGx0dGpvZ3FnZXZhbmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1NTYzNzYsImV4cCI6MjA3NTEzMjM3Nn0.B9gN3_fAn_q6sgoaT2oToOjmnf6UnmWaESU4j7r05P4"
+    "apikey": ANON_KEY
 }
 
 payload = {
-    "game_session_id": GAME_SESSION_ID,
+    # No need to specify game_session_id!
+    # It will automatically go to your active game
     "satellite_data": satellite_data
 }
 
+print("🚀 Uploading satellite data...")
+
 response = requests.post(UPLOAD_URL, json=payload, headers=headers)
 
+# 📊 Show results
 if response.status_code == 200:
-    print("✅ Satellite data uploaded successfully!")
-    print(response.json())
+    result = response.json()
+    print("\n✅ SUCCESS! Satellite data uploaded!")
+    print(f"   📦 Records uploaded: {result.get('records_uploaded', 'N/A')}")
+    print(f"   📅 Date range: {result.get('data_summary', {}).get('date_range', {}).get('start', 'N/A')} to {result.get('data_summary', {}).get('date_range', {}).get('end', 'N/A')}")
+    print(f"   🟢 Observed data: {result.get('data_summary', {}).get('observed_count', 0)} days")
+    print(f"   🟡 Interpolated data: {result.get('data_summary', {}).get('interpolated_count', 0)} days")
+    print("\n🎮 Go back to your game - data will appear automatically!")
 else:
-    print(f"❌ Upload failed: {response.status_code}")
-    print(response.text)
+    print(f"\n❌ Upload failed!")
+    print(f"   Status code: {response.status_code}")
+    print(f"   Error: {response.text}")
 ```
 
-## Step 4: Data Format
+**👆 Run this cell to upload your data**
 
-Each satellite data record must include:
+---
+
+## 🎮 Step 3: Check Your Game
+
+After running Cell 4:
+
+1. **Return to the Terranaut game** in your browser
+2. **Wait 10 seconds** (the game checks for new data every 10 seconds)
+3. **Look for the 🟢 Real badge** - this confirms real NASA data is loaded
+4. **Continue playing** - your game now uses real satellite data!
+
+---
+
+## 📊 Data Format Reference
+
+Your satellite data must follow this format:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `date` | string | Yes | Date in YYYY-MM-DD format |
-| `ndvi` | number | Yes | Normalized Difference Vegetation Index (0.0-1.0) |
-| `lst_kelvin` | number | Yes | Land Surface Temperature in Kelvin |
-| `lst_celsius` | number | Yes | Land Surface Temperature in Celsius |
-| `soil_moisture` | number | Yes | Soil moisture (0.0-1.0, represents 0-100%) |
-| `data_source` | string | Yes | Set to "MODIS_REAL" for real data |
-| `quality_flags` | object | No | Additional metadata about data quality |
+| `date` | string | ✅ Yes | Date in `YYYY-MM-DD` format |
+| `NDVI_obs` | number | ❌ No | Observed NDVI (0.0-1.0) |
+| `NDVI_syn` | number | ✅ Yes | Synthesized NDVI (0.0-1.0) |
+| `NDVI_is_synth` | boolean | ✅ Yes | Is NDVI interpolated? |
+| `NDVI_age_days` | number | ✅ Yes | Age of NDVI observation (days) |
+| `LST_obs` | number | ❌ No | Observed temperature (°C) |
+| `LST_syn` | number | ✅ Yes | Synthesized temperature (°C) |
+| `LST_is_synth` | boolean | ✅ Yes | Is temperature interpolated? |
+| `LST_age_days` | number | ✅ Yes | Age of temperature observation |
+| `SM_obs` | number | ❌ No | Observed soil moisture (0.0-1.0) |
+| `SM_syn` | number | ✅ Yes | Synthesized soil moisture (0.0-1.0) |
+| `SM_is_synth` | boolean | ✅ Yes | Is soil moisture interpolated? |
+| `SM_age_days` | number | ✅ Yes | Age of soil moisture observation |
+| `Tmax_C` | number | ❌ No | Max temperature (°C) |
+| `Tmin_C` | number | ❌ No | Min temperature (°C) |
+| `RH_pct` | number | ❌ No | Relative humidity (%) |
+| `Wind_ms` | number | ❌ No | Wind speed (m/s) |
+| `Rain_mm` | number | ❌ No | Rainfall (mm) |
+| `SWrad_MJm2` | number | ❌ No | Solar radiation (MJ/m²) |
 
-## Step 5: Getting Your Auth Token
+**Notes:**
+- `*_obs` fields are optional (use `None` if missing)
+- `*_syn` fields are required (interpolated values)
+- Dates should cover your game period (check game start date)
 
-1. Open your browser's Developer Tools (F12)
-2. Go to the Console tab
-3. Type: `localStorage.getItem('supabase.auth.token')`
-4. Copy the token value (without quotes)
-5. Paste it in the `AUTH_TOKEN` variable in your Colab notebook
+---
 
-## Step 6: Verify Upload
+## ❓ Troubleshooting
 
-After uploading:
-1. Return to your game
-2. The game polls for new data every 10 seconds
-3. When real data is detected, you'll see a "🟢 Real" badge
-4. The game will automatically load the uploaded data
+### Upload fails with 401 Unauthorized
+- ❌ **Problem:** Invalid or expired authentication token
+- ✅ **Solution:** Get a fresh token from Step 1
 
-## Fallback to Synthetic Data
+### Upload succeeds but game shows no data
+- ❌ **Problem:** Game hasn't polled yet
+- ✅ **Solution:** Wait 10 seconds (game checks every 10 seconds)
 
-If no real data is uploaded within 30 seconds:
-- The game will offer a "Generate Synthetic Data" button
-- This creates simulated satellite data so you can continue playing
-- You can still upload real data later, and it will replace the synthetic data
+### "No active game session found" error
+- ❌ **Problem:** No active game running
+- ✅ **Solution:** Start a new game in Terranaut first
 
-## Troubleshooting
+### Data format errors
+- ❌ **Problem:** Invalid data format
+- ✅ **Solution:** Check all required fields are present (see Data Format Reference above)
 
-**Upload fails with 401 error:**
-- Check that your AUTH_TOKEN is correct and not expired
-- Try refreshing your browser and getting a new token
+### Wrong dates showing
+- ❌ **Problem:** Date mismatch with game period
+- ✅ **Solution:** Ensure satellite data dates match your game's timeframe
 
-**Upload succeeds but game doesn't show data:**
-- Wait 10 seconds for the polling to detect new data
-- Check that the `game_session_id` matches exactly
-- Verify that `data_source` is set to "MODIS_REAL"
+---
 
-**Data format errors:**
-- Ensure all dates are in YYYY-MM-DD format
-- NDVI and soil_moisture should be between 0.0 and 1.0
-- Temperature should be in Kelvin (typically 273-323 range)
+## 💡 Tips
 
-## Support
+- 🔄 **Multiple uploads:** You can upload data multiple times - new data replaces old data
+- 📅 **Date alignment:** Make sure your satellite dates match your game's growing season
+- 🎯 **Active game only:** Uploads go to your most recent active (not completed) game
+- 🔍 **Check quality flags:** Use `*_is_synth` and `*_age_days` to track data quality
 
-For issues or questions, refer to the game documentation or contact support.
+---
+
+## 🆘 Need Help?
+
+If you encounter issues:
+1. Check the error message in Cell 4 output
+2. Verify your auth token is correct and not expired
+3. Ensure you have an active game running
+4. Check your data format matches the reference table
+
+---
+
+**Happy farming with real NASA data! 🌱🛰️**

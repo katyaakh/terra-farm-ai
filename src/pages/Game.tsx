@@ -40,6 +40,9 @@ const Game = () => {
   const [satelliteDataLoaded, setSatelliteDataLoaded] = useState(false);
   const [dataSource, setDataSource] = useState<'MODIS_REAL' | 'MODIS_SIMULATED' | null>(null);
   const [sessionIdCopied, setSessionIdCopied] = useState(false);
+  const [showFallbackButton, setShowFallbackButton] = useState(false);
+  const [isGeneratingSynthetic, setIsGeneratingSynthetic] = useState(false);
+  const [dataCheckAttempts, setDataCheckAttempts] = useState(0);
   const { toast } = useToast();
 
   // Fetch historical weather and satellite data on component mount
@@ -102,11 +105,39 @@ const Game = () => {
     }
   };
 
-  const fetchAndStoreSatelliteData = async () => {
+  const checkForRealData = async (): Promise<boolean> => {
+    if (!state?.gameSessionId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('satellite_data')
+        .select('data_source')
+        .eq('game_session_id', state.gameSessionId)
+        .eq('data_source', 'MODIS_REAL')
+        .limit(1);
+      
+      if (error) {
+        console.error('Error checking for real data:', error);
+        return false;
+      }
+      
+      return data && data.length > 0;
+    } catch (error) {
+      console.error('Error checking for real data:', error);
+      return false;
+    }
+  };
+
+  const fetchAndStoreSatelliteData = async (forceSynthetic = false) => {
     if (!state || !state.gameSessionId) return;
     
     try {
-      addAgentMessage('🛰️ Fetching satellite data (NDVI, LST, soil moisture)...', 'info');
+      if (!forceSynthetic) {
+        addAgentMessage('🛰️ Checking for uploaded satellite data...', 'info');
+      } else {
+        setIsGeneratingSynthetic(true);
+        addAgentMessage('🛰️ Generating synthetic satellite data...', 'info');
+      }
       
       const { data, error } = await supabase.functions.invoke('store-satellite-data', {
         body: {
@@ -121,12 +152,15 @@ const Game = () => {
       if (error) {
         console.error('Satellite data error:', error);
         addAgentMessage(`❌ Error fetching satellite data: ${error.message}`, 'error');
+        setIsGeneratingSynthetic(false);
         return;
       }
 
       if (data?.success) {
         console.log('Satellite data stored:', data);
         setSatelliteDataLoaded(true);
+        setShowFallbackButton(false);
+        setIsGeneratingSynthetic(false);
         
         // Update initial NDVI from first day of satellite data
         if (data.data && data.data.length > 0) {
@@ -146,8 +180,41 @@ const Game = () => {
     } catch (error) {
       console.error('Error fetching satellite data:', error);
       addAgentMessage(`❌ Failed to fetch satellite data: ${error}`, 'error');
+      setIsGeneratingSynthetic(false);
     }
   };
+
+  // Wait 30 seconds, then show fallback button if no real data exists
+  useEffect(() => {
+    if (!state?.gameSessionId || satelliteDataLoaded) return;
+    
+    const timer = setTimeout(async () => {
+      const hasRealData = await checkForRealData();
+      if (!hasRealData && !satelliteDataLoaded) {
+        setShowFallbackButton(true);
+        addAgentMessage('⏱️ No real satellite data uploaded yet. You can generate synthetic data to continue.', 'warning');
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearTimeout(timer);
+  }, [state?.gameSessionId, satelliteDataLoaded]);
+
+  // Poll for real data every 10 seconds
+  useEffect(() => {
+    if (!state?.gameSessionId || satelliteDataLoaded) return;
+    
+    const pollInterval = setInterval(async () => {
+      setDataCheckAttempts(prev => prev + 1);
+      const hasRealData = await checkForRealData();
+      
+      if (hasRealData) {
+        addAgentMessage('🎉 Real satellite data detected! Loading...', 'success');
+        fetchAndStoreSatelliteData(false);
+      }
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(pollInterval);
+  }, [state?.gameSessionId, satelliteDataLoaded]);
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
@@ -441,6 +508,17 @@ const Game = () => {
               <p className="text-xs text-muted-foreground mt-2">
                 📝 Copy this ID and paste it in your Colab notebook to upload real satellite data
               </p>
+              {showFallbackButton && !satelliteDataLoaded && (
+                <Button 
+                  className="w-full mt-3" 
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => fetchAndStoreSatelliteData(true)}
+                  disabled={isGeneratingSynthetic}
+                >
+                  {isGeneratingSynthetic ? 'Generating...' : '⚡ Generate Synthetic Data'}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>

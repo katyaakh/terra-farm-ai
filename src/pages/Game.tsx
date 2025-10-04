@@ -4,7 +4,7 @@ import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game
 import PlantVisualization from '@/components/PlantVisualization';
 import AgentChat from '@/components/AgentChat';
 import { Droplet, Leaf, Zap } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 const Game = () => {
@@ -283,18 +283,18 @@ const Game = () => {
         </div>
 
         {/* Actions Button */}
-        <Dialog>
-          <DialogTrigger asChild>
+        <Sheet>
+          <SheetTrigger asChild>
             <Button className="mt-4 w-full max-w-sm" size="lg">
               <Zap className="mr-2 w-5 h-5" />
               Farm Actions
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Farm Management</DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-3 pt-4">
+          </SheetTrigger>
+          <SheetContent side="bottom" className="bg-card/95 backdrop-blur border-t">
+            <SheetHeader>
+              <SheetTitle>Farm Management</SheetTitle>
+            </SheetHeader>
+            <div className="grid grid-cols-2 gap-3 pt-4 pb-6">
               <button
                 onClick={() => handleAction('irrigate')}
                 disabled={budget < 200}
@@ -333,8 +333,8 @@ const Game = () => {
                 <div className="text-xs opacity-75">No cost</div>
               </button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
 
         {/* Activity Log Compact */}
         <div className="mt-4 w-full max-w-sm">

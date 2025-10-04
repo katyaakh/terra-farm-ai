@@ -11,11 +11,9 @@ interface AgentChatProps {
 }
 
 const AgentChat = ({ showAgent, setShowAgent, agentMessages, mode, screen, setShowDataEntry }: AgentChatProps) => {
-  if (!showAgent) return null;
-
   return (
     <div className="fixed bottom-2 right-2 z-50">
-      {agentMessages.length > 0 ? (
+      {showAgent && agentMessages.length > 0 ? (
         <div className="bg-white rounded-lg shadow-2xl w-80 max-h-[40vh] flex flex-col">
           <div className="bg-gradient-to-r from-primary to-accent text-white p-2 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -58,14 +56,14 @@ const AgentChat = ({ showAgent, setShowAgent, agentMessages, mode, screen, setSh
             </div>
           )}
         </div>
-      ) : (
+      ) : !showAgent ? (
         <button
           onClick={() => setShowAgent(true)}
           className="bg-gradient-to-r from-primary to-accent text-primary-foreground p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
         >
           <MessageCircle size={20} />
         </button>
-      )}
+      ) : null}
     </div>
   );
 };

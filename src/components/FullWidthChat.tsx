@@ -108,7 +108,7 @@ const FullWidthChat = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 w-full h-[20vh] bg-card border-t border-border shadow-2xl z-50">
+    <div className="fixed bottom-0 left-0 right-0 w-full h-[40vh] md:h-[30vh] bg-card border-t border-border shadow-2xl z-50">
       <div className="h-full flex flex-col">
         {/* Chat Header with Avatar */}
         <div className="bg-gradient-to-r from-primary to-accent p-2 flex items-center gap-3">

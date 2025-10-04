@@ -308,7 +308,7 @@ const Game = () => {
   const progress = (currentDay / state.crop.growthDays) * 100;
 
   return (
-    <div className="h-screen w-full bg-gradient-to-b from-amber-900 via-yellow-800 to-green-700 flex flex-col overflow-hidden pb-[20vh]">{/* Added padding for chat */}
+    <div className="h-screen w-full bg-gradient-to-b from-amber-900 via-yellow-800 to-green-700 flex flex-col overflow-hidden pb-[40vh] md:pb-[30vh]">{/* Added padding for chat */}
       {/* Fixed Header */}
       <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
         <div className="flex items-center justify-between gap-2 mb-2">

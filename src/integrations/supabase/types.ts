@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_sessions: {
+        Row: {
+          budget: number
+          completed: boolean
+          created_at: string
+          crop_type: string
+          current_day: number
+          env_score: number
+          final_score: number | null
+          id: string
+          latitude: number
+          location: string
+          longitude: number
+          start_date: string
+          updated_at: string
+          user_id: string
+          water_reserve: number
+        }
+        Insert: {
+          budget?: number
+          completed?: boolean
+          created_at?: string
+          crop_type: string
+          current_day?: number
+          env_score?: number
+          final_score?: number | null
+          id?: string
+          latitude: number
+          location: string
+          longitude: number
+          start_date: string
+          updated_at?: string
+          user_id: string
+          water_reserve?: number
+        }
+        Update: {
+          budget?: number
+          completed?: boolean
+          created_at?: string
+          crop_type?: string
+          current_day?: number
+          env_score?: number
+          final_score?: number | null
+          id?: string
+          latitude?: number
+          location?: string
+          longitude?: number
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+          water_reserve?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

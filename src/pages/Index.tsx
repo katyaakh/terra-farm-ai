@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Play, Database, Sparkles } from 'lucide-react';
+import { Play, Database, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TerranautAvatar from '@/components/TerranautAvatar';
 import AgentChat from '@/components/AgentChat';
 import { AgentMessage } from '@/types/game';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
@@ -33,6 +42,14 @@ const Index = () => {
     navigate('/setup', { state: { mode } });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-600 via-sky-500 to-green-600 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-600 via-sky-500 to-green-600 p-4 flex items-center justify-center overflow-hidden relative">
       {/* Floating clouds */}
@@ -46,8 +63,27 @@ const Index = () => {
           <div className="bg-gradient-to-r from-primary via-green-600 to-accent p-6 text-primary-foreground text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
             <div className="relative z-10">
-              <h1 className="text-4xl font-bold mb-2 tracking-tight">TerraSense</h1>
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex-1"></div>
+                <h1 className="text-4xl font-bold tracking-tight flex-1">TerraSense</h1>
+                <div className="flex-1 flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={signOut}
+                    className="text-white hover:bg-white/20"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
               <p className="text-lg">Farm Smart with NASA Satellite Data 🛰️</p>
+              {user && (
+                <p className="text-sm mt-2 opacity-90">
+                  Welcome, {user.user_metadata?.display_name || user.email}!
+                </p>
+              )}
             </div>
           </div>
 

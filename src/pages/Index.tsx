@@ -82,6 +82,17 @@ const Index = () => {
             {/* Terranaut Character */}
             <div className="flex flex-col items-center mb-8">
               <TerranautAvatar />
+              
+              {/* Agent Chat - Inline below avatar */}
+              <div className="mt-6">
+                <AgentChat 
+                  showAgent={showAgent}
+                  setShowAgent={setShowAgent}
+                  agentMessages={agentMessages}
+                  mode={null}
+                  screen="welcome"
+                />
+              </div>
             </div>
 
             {/* Mode Selection */}

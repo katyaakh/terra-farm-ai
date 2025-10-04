@@ -1,1 +1,13 @@
 project_id = "promrhlttjogqgevangf"
+
+[functions.fetch-satellite-data]
+verify_jwt = false
+
+[functions.fetch-weather-data]
+verify_jwt = false
+
+[functions.run-pipeline]
+verify_jwt = false
+
+[functions.interpret-data]
+verify_jwt = false

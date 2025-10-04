@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.ai-agent-chat]
 verify_jwt = false
+
+[functions.upload-satellite-data]
+verify_jwt = false
+
+[functions.store-satellite-data]
+verify_jwt = false

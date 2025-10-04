@@ -32,52 +32,51 @@ function createSquareGeometry(lat: number, lon: number, extent_m: number) {
   };
 }
 
-// Fetch MODIS NDVI data
+// Fetch MODIS NDVI data - SIMULATION MODE
+// Real data should be uploaded via upload-satellite-data function from Google Colab
 async function fetchMODISNDVI(geometry: any, startDate: string, endDate: string) {
-  console.log('Fetching MODIS NDVI data...');
+  console.log('⚠️ Using simulated MODIS NDVI data (upload real data via upload-satellite-data)');
   
-  // NASA Earth Data API
-  const url = `https://appeears.earthdatacloud.nasa.gov/api/bundle/request`;
-  
-  // For now, return mock structure - actual implementation would use NASA APPEEARS API
-  // which requires authentication and is more complex
   return {
-    dataset: 'MODIS/061/MOD13Q1',
+    dataset: 'MODIS/061/MOD13Q1 (SIMULATED)',
     values: [
-      { date: startDate, value: 0.65, age_days: 0 },
-      { date: endDate, value: 0.72, age_days: 0 }
+      { date: startDate, value: 0.65, age_days: 0, is_simulated: true },
+      { date: endDate, value: 0.72, age_days: 0, is_simulated: true }
     ],
     scale: 0.0001,
-    unit: 'NDVI'
+    unit: 'NDVI',
+    note: 'This is simulated data. Upload real GEE data using the upload-satellite-data endpoint.'
   };
 }
 
-// Fetch MODIS LST data
+// Fetch MODIS LST data - SIMULATION MODE
 async function fetchMODISLST(geometry: any, startDate: string, endDate: string) {
-  console.log('Fetching MODIS LST data...');
+  console.log('⚠️ Using simulated MODIS LST data (upload real data via upload-satellite-data)');
   
   return {
-    dataset: 'MODIS/061/MOD11A2',
+    dataset: 'MODIS/061/MOD11A2 (SIMULATED)',
     values: [
-      { date: startDate, value: 298.15, age_days: 0 }, // Kelvin
-      { date: endDate, value: 301.15, age_days: 0 }
+      { date: startDate, value: 298.15, age_days: 0, is_simulated: true }, // Kelvin
+      { date: endDate, value: 301.15, age_days: 0, is_simulated: true }
     ],
     conversion: '°C = LST * 0.02 - 273.15',
-    unit: 'K'
+    unit: 'K',
+    note: 'This is simulated data. Upload real GEE data using the upload-satellite-data endpoint.'
   };
 }
 
-// Fetch SMAP Soil Moisture
+// Fetch SMAP Soil Moisture - SIMULATION MODE
 async function fetchSMAP(geometry: any, startDate: string, endDate: string) {
-  console.log('Fetching SMAP data...');
+  console.log('⚠️ Using simulated SMAP data (upload real data via upload-satellite-data)');
   
   return {
-    dataset: 'NASA/SMAP/SPL3SMP_E/006',
+    dataset: 'NASA/SMAP/SPL3SMP_E/006 (SIMULATED)',
     values: [
-      { date: startDate, value: 0.35, age_days: 0 }, // m³/m³
-      { date: endDate, value: 0.42, age_days: 0 }
+      { date: startDate, value: 0.35, age_days: 0, is_simulated: true }, // m³/m³
+      { date: endDate, value: 0.42, age_days: 0, is_simulated: true }
     ],
-    unit: 'm³/m³'
+    unit: 'm³/m³',
+    note: 'This is simulated data. Upload real GEE data using the upload-satellite-data endpoint.'
   };
 }
 

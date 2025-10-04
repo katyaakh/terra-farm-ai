@@ -133,32 +133,44 @@ export type Database = {
       satellite_data: {
         Row: {
           created_at: string
+          data_age_days: number | null
           data_source: string | null
           date: string
           game_session_id: string | null
           id: string
+          is_interpolated: boolean | null
+          lst_celsius: number | null
           lst_kelvin: number | null
           ndvi: number | null
+          quality_flags: Json | null
           soil_moisture: number | null
         }
         Insert: {
           created_at?: string
+          data_age_days?: number | null
           data_source?: string | null
           date: string
           game_session_id?: string | null
           id?: string
+          is_interpolated?: boolean | null
+          lst_celsius?: number | null
           lst_kelvin?: number | null
           ndvi?: number | null
+          quality_flags?: Json | null
           soil_moisture?: number | null
         }
         Update: {
           created_at?: string
+          data_age_days?: number | null
           data_source?: string | null
           date?: string
           game_session_id?: string | null
           id?: string
+          is_interpolated?: boolean | null
+          lst_celsius?: number | null
           lst_kelvin?: number | null
           ndvi?: number | null
+          quality_flags?: Json | null
           soil_moisture?: number | null
         }
         Relationships: [

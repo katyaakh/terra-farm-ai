@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
 import FullWidthChat from '@/components/FullWidthChat';
-import { Droplet, Leaf, Zap } from 'lucide-react';
+import { Droplet, Leaf, Zap, Copy, CheckCircle2, Upload } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Game = () => {
   const location = useLocation();
@@ -36,6 +39,8 @@ const Game = () => {
   const [weatherLoaded, setWeatherLoaded] = useState(false);
   const [satelliteDataLoaded, setSatelliteDataLoaded] = useState(false);
   const [dataSource, setDataSource] = useState<'MODIS_REAL' | 'MODIS_SIMULATED' | null>(null);
+  const [sessionIdCopied, setSessionIdCopied] = useState(false);
+  const { toast } = useToast();
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -357,6 +362,18 @@ const Game = () => {
     }
   };
 
+  const copySessionId = () => {
+    if (state?.gameSessionId) {
+      navigator.clipboard.writeText(state.gameSessionId);
+      setSessionIdCopied(true);
+      toast({
+        title: "Session ID Copied!",
+        description: "You can now paste this in your Colab notebook.",
+      });
+      setTimeout(() => setSessionIdCopied(false), 2000);
+    }
+  };
+
   if (!state) return null;
 
   const progress = (currentDay / state.crop.growthDays) * 100;
@@ -384,6 +401,50 @@ const Game = () => {
           ></div>
         </div>
       </div>
+
+      {/* Game Session ID Card */}
+      {state.gameSessionId && (
+        <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
+          <Card className="border-primary/20">
+            <CardHeader className="p-3 pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-primary" />
+                  <CardTitle className="text-sm">Upload Real Data</CardTitle>
+                </div>
+                <Badge variant={dataSource === 'MODIS_REAL' ? 'default' : 'secondary'} className="text-xs">
+                  {dataSource === 'MODIS_REAL' ? '🟢 Real' : '🟡 Synthetic'}
+                </Badge>
+              </div>
+              <CardDescription className="text-xs">
+                Use Colab to upload NASA satellite data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 pt-0">
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-muted px-2 py-1 rounded text-xs font-mono truncate">
+                  {state.gameSessionId}
+                </code>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 w-7 p-0"
+                  onClick={copySessionId}
+                >
+                  {sessionIdCopied ? (
+                    <CheckCircle2 className="w-3 h-3 text-primary" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                📝 Copy this ID and paste it in your Colab notebook to upload real satellite data
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Data Stats - Top */}
       <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">

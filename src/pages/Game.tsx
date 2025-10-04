@@ -6,6 +6,7 @@ import AgentChat from '@/components/AgentChat';
 import { Droplet, Leaf, Zap } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const Game = () => {
   const location = useLocation();
@@ -48,6 +49,63 @@ const Game = () => {
 
   const addActivityLog = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setActivityLog(prev => [...prev, { message, type, day: currentDay }]);
+  };
+
+  const fetchSatelliteData = async () => {
+    if (!state) return;
+    
+    try {
+      addAgentMessage('🛰️ Fetching real NASA satellite data...', 'info');
+      
+      // Calculate date range (last 30 days)
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+      
+      const { data, error } = await supabase.functions.invoke('fetch-satellite-data', {
+        body: {
+          lat: state.location.lat,
+          lon: state.location.lon,
+          extent_m: 1000, // 1km square area
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          datasets: ['ndvi', 'lst', 'smap']
+        }
+      });
+
+      if (error) {
+        console.error('Satellite data error:', error);
+        addAgentMessage(`❌ Error fetching satellite data: ${error.message}`, 'error');
+        return;
+      }
+
+      if (data) {
+        console.log('Satellite data received:', data);
+        
+        // Update game state with real data if available
+        if (data.datasets?.ndvi?.values?.length > 0) {
+          const latestNdvi = data.datasets.ndvi.values[data.datasets.ndvi.values.length - 1].value;
+          setNdvi(latestNdvi);
+          addAgentMessage(`📡 Real MODIS NDVI: ${latestNdvi.toFixed(2)}`, 'success');
+        }
+        
+        if (data.datasets?.smap?.values?.length > 0) {
+          const latestSoilMoisture = data.datasets.smap.values[data.datasets.smap.values.length - 1].value * 100;
+          setSoilMoisture(latestSoilMoisture);
+          addAgentMessage(`💧 Real SMAP Soil Moisture: ${latestSoilMoisture.toFixed(1)}%`, 'success');
+        }
+        
+        if (data.datasets?.lst?.values?.length > 0) {
+          const latestLST = data.datasets.lst.values[data.datasets.lst.values.length - 1].value;
+          const celsiusTemp = latestLST * 0.02 - 273.15;
+          setTemperature(celsiusTemp);
+          addAgentMessage(`🌡️ Real MODIS Temperature: ${celsiusTemp.toFixed(1)}°C`, 'success');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching satellite data:', error);
+      addAgentMessage(`❌ Failed to fetch satellite data: ${error}`, 'error');
+    }
   };
 
   const simulateDay = () => {
@@ -137,6 +195,8 @@ const Game = () => {
         }
         break;
       case 'monitor':
+        // Fetch real satellite data
+        fetchSatelliteData();
         addAgentMessage(`📊 NASA Data: Moisture ${soilMoisture.toFixed(1)}%, NDVI ${ndvi.toFixed(2)}, Temp ${temperature.toFixed(1)}°C`, 'info');
         addActivityLog('Satellite data checked (free)', 'info');
         break;

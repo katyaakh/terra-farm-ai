@@ -122,7 +122,7 @@ const FullWidthChat = ({
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 flex flex-col overflow-y-auto p-3 bg-muted/30">
+        <div className="flex-1 overflow-y-auto p-3 bg-muted/30">
           <div className="flex gap-2 overflow-x-auto pb-2">
             {agentMessages.slice(-5).map((msg, idx) => (
               <div

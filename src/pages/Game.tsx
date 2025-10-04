@@ -19,8 +19,6 @@ const Game = () => {
   } | null;
 
   const [currentDay, setCurrentDay] = useState(1);
-  const [isPaused, setIsPaused] = useState(false);
-  const [speed, setSpeed] = useState(1000); // ms per day
   const [budget, setBudget] = useState(10000);
   const [waterReserve, setWaterReserve] = useState(100);
   const [envScore, setEnvScore] = useState(85);
@@ -41,30 +39,6 @@ const Game = () => {
     addActivityLog(`Day 1: ${state.crop.name} planting started at ${state.location.name}`, 'info');
   }, []);
 
-  useEffect(() => {
-    if (!isPaused && state && currentDay <= state.crop.growthDays) {
-      const timer = setTimeout(() => {
-        setCurrentDay(prev => prev + 1);
-        simulateDay();
-      }, speed);
-      return () => clearTimeout(timer);
-    } else if (state && currentDay > state.crop.growthDays) {
-      // Game ended, navigate to results
-      setTimeout(() => {
-        navigate('/results', {
-          state: {
-            farmName: state.farmName,
-            crop: state.crop,
-            location: state.location,
-            finalBudget: budget,
-            envScore,
-            quality: calculateQuality(),
-            days: currentDay - 1
-          }
-        });
-      }, 2000);
-    }
-  }, [currentDay, isPaused, speed]);
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
@@ -190,19 +164,7 @@ const Game = () => {
                 <p className="text-2xl font-bold text-primary">Day {currentDay}</p>
                 <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsPaused(!isPaused)}
-                  className="p-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  {isPaused ? <Play size={20} /> : <Pause size={20} />}
-                </button>
-                <button
-                  onClick={() => setSpeed(prev => prev === 1000 ? 500 : prev === 500 ? 250 : 1000)}
-                  className="p-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  <FastForward size={20} />
-                  <span className="ml-1 text-xs">{speed === 1000 ? '1x' : speed === 500 ? '2x' : '4x'}</span>
+
                 </button>
               </div>
             </div>

@@ -164,9 +164,6 @@ const Game = () => {
                 <p className="text-2xl font-bold text-primary">Day {currentDay}</p>
                 <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
               </div>
-
-                </button>
-              </div>
             </div>
           </div>
           

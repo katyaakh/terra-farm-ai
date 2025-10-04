@@ -116,7 +116,7 @@ const FullWidthChat = ({
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-3 bg-muted/30">
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex flex-wrap gap-2 pb-2">
             {agentMessages.slice(-5).map((msg, idx) => <div key={idx} className={`flex-shrink-0 max-w-xs p-2 rounded-lg text-xs ${msg.type === 'error' ? 'bg-destructive/10 text-destructive border border-destructive/20' : msg.type === 'warning' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' : msg.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
                 {msg.text}
               </div>)}

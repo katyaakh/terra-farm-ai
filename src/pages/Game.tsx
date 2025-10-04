@@ -19,6 +19,7 @@ const Game = () => {
     crop: Crop;
     startDate: string;
     harvestDate: string;
+    gameSessionId?: string;
   } | null;
 
   const [currentDay, setCurrentDay] = useState(1);
@@ -33,8 +34,9 @@ const Game = () => {
   const [activityLog, setActivityLog] = useState<GameLog[]>([]);
   const [historicalWeather, setHistoricalWeather] = useState<any[]>([]);
   const [weatherLoaded, setWeatherLoaded] = useState(false);
+  const [satelliteDataLoaded, setSatelliteDataLoaded] = useState(false);
 
-  // Fetch historical weather data on component mount
+  // Fetch historical weather and satellite data on component mount
   useEffect(() => {
     if (!state) {
       navigate('/');
@@ -46,6 +48,11 @@ const Game = () => {
     
     // Fetch real historical weather data
     fetchHistoricalWeatherData();
+    
+    // Fetch and store satellite data if game session exists
+    if (state.gameSessionId) {
+      fetchAndStoreSatelliteData();
+    }
   }, []);
 
   const fetchHistoricalWeatherData = async () => {
@@ -89,6 +96,49 @@ const Game = () => {
     }
   };
 
+  const fetchAndStoreSatelliteData = async () => {
+    if (!state || !state.gameSessionId) return;
+    
+    try {
+      addAgentMessage('🛰️ Fetching satellite data (NDVI, LST, soil moisture)...', 'info');
+      
+      const { data, error } = await supabase.functions.invoke('store-satellite-data', {
+        body: {
+          game_session_id: state.gameSessionId,
+          lat: state.location.lat,
+          lon: state.location.lon,
+          start_date: state.startDate,
+          end_date: state.harvestDate
+        }
+      });
+
+      if (error) {
+        console.error('Satellite data error:', error);
+        addAgentMessage(`❌ Error fetching satellite data: ${error.message}`, 'error');
+        return;
+      }
+
+      if (data?.success) {
+        console.log('Satellite data stored:', data);
+        setSatelliteDataLoaded(true);
+        
+        // Update initial NDVI from first day of satellite data
+        if (data.data && data.data.length > 0) {
+          const firstDay = data.data[0];
+          setNdvi(firstDay.ndvi);
+          setSoilMoisture(firstDay.soil_moisture * 100); // Convert to percentage
+          
+          addAgentMessage(
+            `✅ Loaded ${data.records_created} days of satellite data (NDVI, LST, soil moisture) from ${state.startDate} to ${state.harvestDate}`, 
+            'success'
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching satellite data:', error);
+      addAgentMessage(`❌ Failed to fetch satellite data: ${error}`, 'error');
+    }
+  };
 
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);

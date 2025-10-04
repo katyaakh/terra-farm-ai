@@ -130,6 +130,47 @@ export type Database = {
         }
         Relationships: []
       }
+      satellite_data: {
+        Row: {
+          created_at: string
+          data_source: string | null
+          date: string
+          game_session_id: string | null
+          id: string
+          lst_kelvin: number | null
+          ndvi: number | null
+          soil_moisture: number | null
+        }
+        Insert: {
+          created_at?: string
+          data_source?: string | null
+          date: string
+          game_session_id?: string | null
+          id?: string
+          lst_kelvin?: number | null
+          ndvi?: number | null
+          soil_moisture?: number | null
+        }
+        Update: {
+          created_at?: string
+          data_source?: string | null
+          date?: string
+          game_session_id?: string | null
+          id?: string
+          lst_kelvin?: number | null
+          ndvi?: number | null
+          soil_moisture?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "satellite_data_game_session_id_fkey"
+            columns: ["game_session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

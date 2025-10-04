@@ -137,10 +137,12 @@ const Setup = () => {
 
   const handleStart = async () => {
     if (farmName && farmSize && selectedLocation && selectedCrop) {
+      let gameSessionId = null;
+      
       // If user is logged in, save farm and create game session
       if (user) {
         try {
-          const { error } = await supabase.from('game_sessions').insert({
+          const { data, error } = await supabase.from('game_sessions').insert({
             user_id: user.id,
             farm_id: selectedFarmId || null,
             location: selectedLocation.name,
@@ -152,9 +154,10 @@ const Setup = () => {
             water_reserve: 100,
             budget: 10000,
             env_score: 100,
-          });
+          }).select().single();
 
           if (error) throw error;
+          gameSessionId = data?.id;
         } catch (error) {
           console.error('Error creating game session:', error);
           toast.error('Failed to save game session');
@@ -169,7 +172,8 @@ const Setup = () => {
           location: selectedLocation,
           crop: selectedCrop,
           startDate,
-          harvestDate
+          harvestDate,
+          gameSessionId
         }
       });
     }

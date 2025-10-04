@@ -1,8 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { locations, crops } from '@/data/gameData';
-import { Crop, Location, AgentMessage } from '@/types/game';
-import AgentChat from '@/components/AgentChat';
+import { Crop, Location } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -46,19 +45,13 @@ const Setup = () => {
   
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [harvestDate, setHarvestDate] = useState('');
-  const [showAgent, setShowAgent] = useState(true);
-  const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
   const [mapboxToken, setMapboxToken] = useState('');
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-    setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
-  };
-
   const getUserLocation = () => {
     if (!navigator.geolocation) {
-      addAgentMessage('Geolocation is not supported by your browser', 'error');
+      toast.error('Geolocation is not supported by your browser');
       return;
     }
 
@@ -100,11 +93,11 @@ const Setup = () => {
         setUserLocation(newLocation);
         setSelectedLocation(newLocation);
         setLoadingLocation(false);
-        addAgentMessage(`📍 Got your location: ${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`, 'success');
+        toast.success(`📍 Got your location: ${latitude.toFixed(2)}°N, ${longitude.toFixed(2)}°E`);
       },
       (error) => {
         setLoadingLocation(false);
-        addAgentMessage(`Location error: ${error.message}. Please enable location permissions.`, 'error');
+        toast.error(`Location error: ${error.message}. Please enable location permissions.`);
       }
     );
   };
@@ -114,11 +107,6 @@ const Setup = () => {
       navigate('/');
       return;
     }
-    addAgentMessage(mode === 'simulation' 
-      ? "Great choice! Let's set up your simulation with historical NASA data. First, tell me about your farm!" 
-      : "Perfect! Let's connect your real farm data with NASA satellites for daily monitoring and forecasts!", 
-      'success'
-    );
     
     if (user) {
       loadFarms();
@@ -183,8 +171,6 @@ const Setup = () => {
     setNewFarmName('');
     setNewFarmSize('');
     setIsNewFarmDialogOpen(false);
-    
-    addAgentMessage(`Great! Your farm "${data.farm_name}" (${data.farm_size} hectares) has been created. Now let's set up your crop and location.`, 'success');
   };
 
   const handleFarmChange = (farmId: string) => {
@@ -462,7 +448,6 @@ const Setup = () => {
                     const baseDate = mode === 'monitoring' ? new Date(startDate) : new Date();
                     const harvestDay = new Date(baseDate);
                     harvestDay.setDate(harvestDay.getDate() + crop.growthDays);
-                    addAgentMessage(`📅 Great! ${crop.name} takes ${crop.growthDays} days to grow. Expected harvest: ${harvestDay.toLocaleDateString()}`, 'info');
                   }}
                   className={`p-3 rounded-lg border-2 transition-all ${
                     selectedCrop?.id === crop.id 
@@ -495,9 +480,7 @@ const Setup = () => {
                     const today = new Date().toISOString().split('T')[0];
                     
                     if (harvestDateStr > today && mode === 'simulation') {
-                      addAgentMessage(`⚠️ Harvest date would be in the future. For simulation, both dates must be in the past to use real historical data.`, 'warning');
-                    } else {
-                      addAgentMessage(`📅 Updated! With this start date, your ${selectedCrop.name} harvest was on ${harvestDay.toLocaleDateString()}`, 'info');
+                      toast.warning('⚠️ Harvest date would be in the future. For simulation, both dates must be in the past to use real historical data.');
                     }
                   }
                 }}
@@ -547,13 +530,6 @@ const Setup = () => {
           </button>
         </div>
       </div>
-      <AgentChat 
-        showAgent={showAgent}
-        setShowAgent={setShowAgent}
-        agentMessages={agentMessages}
-        mode={mode}
-        screen="setup"
-      />
     </div>
   );
 };

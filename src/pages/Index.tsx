@@ -52,21 +52,21 @@ const Index = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-b from-sky-600 via-sky-500 to-green-600 p-4 flex items-center justify-center overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-b from-sky-600 via-sky-500 to-green-600 p-4 flex items-center justify-center overflow-hidden relative">
       {/* Floating clouds */}
       <div className="absolute top-10 left-10 w-24 h-12 bg-white/20 rounded-full blur-sm animate-pulse"></div>
       <div className="absolute top-32 right-20 w-32 h-16 bg-white/15 rounded-full blur-sm animate-pulse delay-100"></div>
       <div className="absolute bottom-20 left-1/4 w-20 h-10 bg-white/10 rounded-full blur-sm animate-pulse delay-200"></div>
 
-      <div className="max-w-6xl w-full h-full flex items-center">
-        <div className="bg-card rounded-3xl shadow-2xl overflow-hidden animate-scale-in w-full max-h-[95vh]">
+      <div className="max-w-4xl w-full">
+        <div className="bg-card rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary via-green-600 to-accent p-4 text-primary-foreground text-center relative overflow-hidden">
+          <div className="bg-gradient-to-r from-primary via-green-600 to-accent p-6 text-primary-foreground text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
             <div className="relative z-10">
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex justify-between items-center mb-2">
                 <div className="flex-1"></div>
-                <h1 className="text-3xl font-bold tracking-tight flex-1">Terranaut</h1>
+                <h1 className="text-4xl font-bold tracking-tight flex-1">Terranaut</h1>
                 <div className="flex-1 flex justify-end">
                   <Button
                     variant="ghost"
@@ -79,9 +79,9 @@ const Index = () => {
                   </Button>
                 </div>
               </div>
-              <p className="text-base">Farm Smart with NASA Satellite Data 🛰️</p>
+              <p className="text-lg">Farm Smart with NASA Satellite Data 🛰️</p>
               {user && (
-                <p className="text-xs mt-1 opacity-90">
+                <p className="text-sm mt-2 opacity-90">
                   Welcome, {user.user_metadata?.display_name || user.email}!
                 </p>
               )}
@@ -89,114 +89,111 @@ const Index = () => {
           </div>
 
           {/* Content */}
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Left Column - Character & Messages */}
-              <div className="flex flex-col items-center">
-                <div className="scale-75">
-                  <TerranautAvatar />
-                </div>
-                <div className="mt-2 space-y-2 w-full">
-                  {agentMessages.slice(-2).map((msg, idx) => (
-                    <div key={idx} className={`rounded-xl p-3 shadow border ${
-                      idx === 0 ? 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200' :
-                      'bg-gradient-to-r from-green-50 to-blue-50 border-green-200'
-                    }`}>
-                      <p className="text-xs text-gray-800 font-medium text-center">
-                        {msg.text.includes("Terra") ? (
-                          <>
-                            {msg.text.split("Terra")[0]}
-                            <span className="font-bold text-primary">Terra</span>
-                            {msg.text.split("Terra")[1]}
-                          </>
-                        ) : (
-                          msg.text
-                        )}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* NASA Data Info */}
-                <div className="bg-gradient-to-r from-blue-50 via-green-50 to-blue-50 rounded-xl p-3 border border-blue-200 shadow mt-3 w-full">
-                  <h4 className="font-bold text-gray-800 text-center mb-2 text-sm flex items-center justify-center gap-1">
-                    <span className="text-lg">🛰️</span>
-                    <span>NASA Data</span>
-                  </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-white rounded-lg p-2 shadow-sm">
-                      <h5 className="font-bold text-blue-600 text-xs text-center">SMAP</h5>
-                      <p className="text-[10px] text-gray-600 text-center">Soil Moisture</p>
-                    </div>
-                    <div className="bg-white rounded-lg p-2 shadow-sm">
-                      <h5 className="font-bold text-green-600 text-xs text-center">MODIS</h5>
-                      <p className="text-[10px] text-gray-600 text-center">Vegetation</p>
-                    </div>
-                    <div className="bg-white rounded-lg p-2 shadow-sm">
-                      <h5 className="font-bold text-sky-600 text-xs text-center">GPM</h5>
-                      <p className="text-[10px] text-gray-600 text-center">Rainfall</p>
-                    </div>
+          <div className="p-6">
+            {/* Terranaut Character */}
+            <div className="flex flex-col items-center mb-8">
+              <TerranautAvatar />
+              <div className="mt-6 max-w-2xl space-y-3">
+                {agentMessages.slice(-3).map((msg, idx) => (
+                  <div key={idx} className={`rounded-2xl p-4 shadow-lg animate-fade-in border-2 ${
+                    idx === 0 ? 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200' :
+                    idx === 1 ? 'bg-gradient-to-r from-green-50 to-blue-50 border-green-200' :
+                    'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200'
+                  }`}>
+                    <p className="text-sm text-gray-800 font-medium text-center">
+                      {msg.text.includes("Terra") ? (
+                        <>
+                          {msg.text.split("Terra")[0]}
+                          <span className="font-bold text-primary">Terra</span>
+                          {msg.text.split("Terra")[1]}
+                        </>
+                      ) : (
+                        msg.text
+                      )}
+                    </p>
                   </div>
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Right Column - Mode Selection */}
-              <div className="flex flex-col gap-4">
-                <button
-                  onMouseEnter={() => setHoveredMode('simulation')}
-                  onMouseLeave={() => setHoveredMode(null)}
-                  onClick={() => handleModeSelect('simulation')}
-                  className="group relative bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-5 rounded-2xl shadow-xl transition-all transform hover:scale-105 hover:shadow-2xl overflow-hidden flex-1"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <div className="relative z-10">
-                    <div className="flex justify-center mb-2">
-                      <div className="bg-white/20 p-2 rounded-full">
-                        <Play size={28} className="animate-pulse" />
-                      </div>
+            {/* Mode Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <button
+                onMouseEnter={() => setHoveredMode('simulation')}
+                onMouseLeave={() => setHoveredMode(null)}
+                onClick={() => handleModeSelect('simulation')}
+                className="group relative bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-6 rounded-2xl shadow-xl transition-all transform hover:scale-105 hover:shadow-2xl overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <div className="relative z-10">
+                  <div className="flex justify-center mb-3">
+                    <div className="bg-white/20 p-3 rounded-full">
+                      <Play size={32} className="animate-pulse" />
                     </div>
-                    <h3 className="text-xl font-bold mb-1">Game Simulator</h3>
-                    <p className="text-xs text-purple-100 mb-3">Learn with historical NASA data</p>
-                    {hoveredMode === 'simulation' && (
-                      <div className="animate-fade-in">
-                        <ul className="text-xs text-left text-purple-100 space-y-1">
-                          <li>✓ Practice decision-making</li>
-                          <li>✓ No real-world risk</li>
-                          <li>✓ Learn from past patterns</li>
-                          <li>✓ Perfect for beginners</li>
-                        </ul>
-                      </div>
-                    )}
                   </div>
-                </button>
+                  <h3 className="text-2xl font-bold mb-2">Game Simulator</h3>
+                  <p className="text-sm text-purple-100 mb-4">Learn with historical NASA data</p>
+                  {hoveredMode === 'simulation' && (
+                    <div className="animate-fade-in">
+                      <ul className="text-xs text-left text-purple-100 space-y-1">
+                        <li>✓ Practice decision-making</li>
+                        <li>✓ No real-world risk</li>
+                        <li>✓ Learn from past patterns</li>
+                        <li>✓ Perfect for beginners</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </button>
 
-                <button
-                  onMouseEnter={() => setHoveredMode('monitoring')}
-                  onMouseLeave={() => setHoveredMode(null)}
-                  onClick={() => handleModeSelect('monitoring')}
-                  className="group relative bg-gradient-to-br from-primary to-green-600 hover:from-green-600 hover:to-green-700 text-white p-5 rounded-2xl shadow-xl transition-all transform hover:scale-105 hover:shadow-2xl overflow-hidden flex-1"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <div className="relative z-10">
-                    <div className="flex justify-center mb-2">
-                      <div className="bg-white/20 p-2 rounded-full">
-                        <Database size={28} className="animate-pulse" />
-                      </div>
+              <button
+                onMouseEnter={() => setHoveredMode('monitoring')}
+                onMouseLeave={() => setHoveredMode(null)}
+                onClick={() => handleModeSelect('monitoring')}
+                className="group relative bg-gradient-to-br from-primary to-green-600 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-2xl shadow-xl transition-all transform hover:scale-105 hover:shadow-2xl overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                <div className="relative z-10">
+                  <div className="flex justify-center mb-3">
+                    <div className="bg-white/20 p-3 rounded-full">
+                      <Database size={32} className="animate-pulse" />
                     </div>
-                    <h3 className="text-xl font-bold mb-1">Real Monitoring</h3>
-                    <p className="text-xs text-green-100 mb-3">Monitor your actual farm</p>
-                    {hoveredMode === 'monitoring' && (
-                      <div className="animate-fade-in">
-                        <ul className="text-xs text-left text-green-100 space-y-1">
-                          <li>✓ Live satellite data</li>
-                          <li>✓ Daily forecasts</li>
-                          <li>✓ Track real crops</li>
-                          <li>✓ Optimize resources</li>
-                        </ul>
-                      </div>
-                    )}
                   </div>
-                </button>
+                  <h3 className="text-2xl font-bold mb-2">Real Monitoring</h3>
+                  <p className="text-sm text-green-100 mb-4">Monitor your actual farm</p>
+                  {hoveredMode === 'monitoring' && (
+                    <div className="animate-fade-in">
+                      <ul className="text-xs text-left text-green-100 space-y-1">
+                        <li>✓ Live satellite data</li>
+                        <li>✓ Daily forecasts</li>
+                        <li>✓ Track real crops</li>
+                        <li>✓ Optimize resources</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </button>
+            </div>
+
+            {/* NASA Data Info */}
+            <div className="bg-gradient-to-r from-blue-50 via-green-50 to-blue-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
+              <h4 className="font-bold text-gray-800 text-center mb-4 flex items-center justify-center gap-2">
+                <span className="text-2xl">🛰️</span>
+                <span>NASA Earth Observation Missions</span>
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-blue-600 mb-2 text-center">SMAP</h5>
+                  <p className="text-xs text-gray-600 text-center">Soil Moisture Active Passive - Monitors soil moisture globally</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-green-600 mb-2 text-center">MODIS</h5>
+                  <p className="text-xs text-gray-600 text-center">Vegetation health & NDVI measurements</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-sky-600 mb-2 text-center">GPM</h5>
+                  <p className="text-xs text-gray-600 text-center">Global Precipitation Measurement - Rainfall data</p>
+                </div>
               </div>
             </div>
           </div>

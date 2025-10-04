@@ -1,4 +1,4 @@
-import { MessageCircle, X, Upload } from 'lucide-react';
+import { MessageCircle, Upload } from 'lucide-react';
 import { AgentMessage } from '@/types/game';
 
 interface AgentChatProps {
@@ -12,10 +12,10 @@ interface AgentChatProps {
 
 const AgentChat = ({ showAgent, setShowAgent, agentMessages, mode, screen, setShowDataEntry }: AgentChatProps) => {
   return (
-    <div className="fixed bottom-2 right-2 z-50">
+    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 z-50">
       {showAgent && agentMessages.length > 0 ? (
         <div className="bg-white rounded-lg shadow-2xl w-80 max-h-[40vh] flex flex-col">
-          <div className="bg-gradient-to-r from-primary to-accent text-white p-2 rounded-t-lg flex items-center justify-between">
+          <div className="bg-gradient-to-r from-primary to-accent text-white p-2 rounded-t-lg flex items-center">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-sm">🌍</div>
               <div>
@@ -23,9 +23,6 @@ const AgentChat = ({ showAgent, setShowAgent, agentMessages, mode, screen, setSh
                 <p className="text-xs text-green-100">Farming Advisor</p>
               </div>
             </div>
-            <button onClick={() => setShowAgent(false)} className="hover:bg-white hover:bg-opacity-20 rounded p-1 transition-all">
-              <X size={14} />
-            </button>
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 space-y-2">

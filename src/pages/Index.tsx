@@ -92,7 +92,16 @@ const Index = () => {
           <div className="p-6">
             {/* Terranaut Character */}
             <div className="flex flex-col items-center mb-8">
-              <TerranautAvatar />
+              <div className="relative">
+                <TerranautAvatar />
+                <AgentChat 
+                  showAgent={showAgent}
+                  setShowAgent={setShowAgent}
+                  agentMessages={agentMessages}
+                  mode={null}
+                  screen="welcome"
+                />
+              </div>
               <div className="mt-6 max-w-2xl space-y-3">
                 {agentMessages.slice(-3).map((msg, idx) => (
                   <div key={idx} className={`rounded-2xl p-4 shadow-lg animate-fade-in border-2 ${
@@ -199,14 +208,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-      
-      <AgentChat 
-        showAgent={showAgent}
-        setShowAgent={setShowAgent}
-        agentMessages={agentMessages}
-        mode={null}
-        screen="welcome"
-      />
     </div>
   );
 };

@@ -477,15 +477,12 @@ const Game = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Upload className="w-4 h-4 text-primary" />
-                  <CardTitle className="text-sm">Upload Real Data</CardTitle>
+                  <CardTitle className="text-sm">Game Session ID</CardTitle>
                 </div>
                 <Badge variant={dataSource === 'MODIS_REAL' ? 'default' : 'secondary'} className="text-xs">
                   {dataSource === 'MODIS_REAL' ? '🟢 Real' : '🟡 Synthetic'}
                 </Badge>
               </div>
-              <CardDescription className="text-xs">
-                Use Colab to upload NASA satellite data
-              </CardDescription>
             </CardHeader>
             <CardContent className="p-3 pt-0">
               <div className="flex items-center gap-2">
@@ -505,9 +502,6 @@ const Game = () => {
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                📝 Copy this ID and paste it in your Colab notebook to upload real satellite data
-              </p>
               {showFallbackButton && !satelliteDataLoaded && (
                 <Button 
                   className="w-full mt-3" 

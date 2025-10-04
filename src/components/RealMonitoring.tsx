@@ -244,8 +244,18 @@ const RealMonitoring = ({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Map */}
             <Card>
-              
-              
+              <CardHeader>
+                <CardTitle>Field Location</CardTitle>
+                <CardDescription>
+                  Interactive map showing your field coordinates and boundaries
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  ref={mapContainer} 
+                  className="w-full h-[400px] rounded-lg border border-border"
+                />
+              </CardContent>
             </Card>
 
             {/* Comparison Table */}

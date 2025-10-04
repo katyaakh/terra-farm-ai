@@ -9,6 +9,7 @@ import Setup from "./pages/Setup";
 import Game from "./pages/Game";
 import Results from "./pages/Results";
 import Auth from "./pages/Auth";
+import RealMonitoring from "./pages/RealMonitoring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/setup/farm" element={<Setup />} />
           <Route path="/game" element={<Game />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/real-monitoring" element={<RealMonitoring />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

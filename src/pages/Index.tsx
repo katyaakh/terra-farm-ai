@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, Database, LogOut } from 'lucide-react';
+import { Play, Database, LogOut, Satellite } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TerranautAvatar from '@/components/TerranautAvatar';
 import AgentChat from '@/components/AgentChat';
@@ -152,6 +152,18 @@ const Index = () => {
                   )}
                 </div>
               </button>
+            </div>
+
+            {/* Quick Access to Real Monitoring */}
+            <div className="mb-6">
+              <Button
+                onClick={() => navigate('/real-monitoring')}
+                variant="outline"
+                className="w-full border-2 border-green-500 hover:bg-green-50 text-green-700 font-semibold"
+              >
+                <Satellite className="mr-2 h-5 w-5" />
+                Quick Access: Real-Time Field Analysis
+              </Button>
             </div>
 
             {/* NASA Data Info */}

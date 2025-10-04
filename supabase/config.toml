@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.store-satellite-data]
 verify_jwt = false
+
+[functions.get-optimal-crop-conditions]
+verify_jwt = false
+
+[functions.analyze-field-conditions]
+verify_jwt = false

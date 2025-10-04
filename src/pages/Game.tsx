@@ -3,13 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
 import FullWidthChat from '@/components/FullWidthChat';
-import { Droplet, Leaf, Zap, Upload } from 'lucide-react';
+import { Droplet, Leaf, Zap, Upload, Satellite } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import RealMonitoring from '@/components/RealMonitoring';
 
 const Game = () => {
   const location = useLocation();
@@ -568,15 +570,16 @@ const Game = () => {
           </div>
         </div>
 
-        {/* Actions Button */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button className="mt-4 w-full max-w-sm" size="lg">
-              <Zap className="mr-2 w-5 h-5" />
-              Farm Actions
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="bg-card/95 backdrop-blur border-t">
+        {/* Actions Buttons */}
+        <div className="mt-4 w-full max-w-sm space-y-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="w-full" size="lg">
+                <Zap className="mr-2 w-5 h-5" />
+                Farm Actions
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="bg-card/95 backdrop-blur border-t">
             <SheetHeader>
               <SheetTitle>Farm Management</SheetTitle>
             </SheetHeader>
@@ -621,6 +624,30 @@ const Game = () => {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Real Monitoring Button */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full border-green-500 text-green-700" size="lg">
+              <Satellite className="mr-2 w-5 h-5" />
+              Real-Time Analysis
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Real-Time Field Monitoring</DialogTitle>
+              <DialogDescription>
+                Live satellite data analysis for your field
+              </DialogDescription>
+            </DialogHeader>
+            <RealMonitoring 
+              initialLat={state.location.lat}
+              initialLon={state.location.lon}
+              initialCrop={state.crop.name.split(' ')[0].toLowerCase()}
+            />
+          </DialogContent>
+        </Dialog>
+        </div>
 
         {/* Activity Log Compact */}
         <div className="mt-4 w-full max-w-sm">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
-import AgentChat from '@/components/AgentChat';
+import FullWidthChat from '@/components/FullWidthChat';
 import { Droplet, Leaf, Zap } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,6 @@ const Game = () => {
   const [soilMoisture, setSoilMoisture] = useState(60);
   const [ndvi, setNdvi] = useState(0.65);
   const [plantHealth, setPlantHealth] = useState<PlantHealth>('good');
-  const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
   const [activityLog, setActivityLog] = useState<GameLog[]>([]);
   const [historicalWeather, setHistoricalWeather] = useState<any[]>([]);
@@ -309,7 +308,7 @@ const Game = () => {
   const progress = (currentDay / state.crop.growthDays) * 100;
 
   return (
-    <div className="h-screen w-full bg-gradient-to-b from-amber-900 via-yellow-800 to-green-700 flex flex-col overflow-hidden">
+    <div className="h-screen w-full bg-gradient-to-b from-amber-900 via-yellow-800 to-green-700 flex flex-col overflow-hidden pb-[20vh]">{/* Added padding for chat */}
       {/* Fixed Header */}
       <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -489,12 +488,17 @@ const Game = () => {
         </div>
       </div>
 
-      <AgentChat 
-        showAgent={showAgent}
-        setShowAgent={setShowAgent}
+      <FullWidthChat 
         agentMessages={agentMessages}
         mode={state.mode}
-        screen="game"
+        location={state.location}
+        onAddMessage={(msg) => setAgentMessages(prev => [...prev, msg])}
+        onWaterCrop={() => handleAction('irrigate')}
+        onApplyFertilizer={() => handleAction('fertilize')}
+        onCheckMarket={() => handleAction('monitor')}
+        onViewLogs={() => {
+          console.log('Activity logs:', activityLog);
+        }}
       />
     </div>
   );

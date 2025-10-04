@@ -11,13 +11,23 @@ import { Loader2, Satellite, TrendingUp, Droplet, Thermometer } from 'lucide-rea
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
 interface ComparisonData {
-  soil_moisture: { real: string; optimal: string; status: string };
-  temperature: { real: string; optimal: string; status: string };
-  ndvi: { real: string; optimal: string; status: string };
+  soil_moisture: {
+    real: string;
+    optimal: string;
+    status: string;
+  };
+  temperature: {
+    real: string;
+    optimal: string;
+    status: string;
+  };
+  ndvi: {
+    real: string;
+    optimal: string;
+    status: string;
+  };
 }
-
 interface AnalysisResult {
   comparison: ComparisonData;
   geometry: any;
@@ -32,40 +42,39 @@ interface AnalysisResult {
     };
   };
 }
-
 interface RealMonitoringProps {
   initialLat?: number;
   initialLon?: number;
   initialCrop?: string;
 }
-
-const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringProps) => {
+const RealMonitoring = ({
+  initialLat,
+  initialLon,
+  initialCrop
+}: RealMonitoringProps) => {
   const [lat, setLat] = useState(initialLat?.toString() || '41.68');
   const [lon, setLon] = useState(initialLon?.toString() || '2.28');
   const [area, setArea] = useState('10000'); // 10000 m² = 1 hectare
   const [crop, setCrop] = useState(initialCrop || 'tomatoes');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const fieldLayer = useRef<L.Polygon | null>(null);
-
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
     // Initialize Leaflet map
-    map.current = L.map(mapContainer.current).setView(
-      [parseFloat(lat), parseFloat(lon)],
-      14
-    );
+    map.current = L.map(mapContainer.current).setView([parseFloat(lat), parseFloat(lon)], 14);
 
     // Add OpenStreetMap tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
+      maxZoom: 19
     }).addTo(map.current);
-
     return () => {
       if (map.current) {
         map.current.remove();
@@ -73,13 +82,11 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
       }
     };
   }, []);
-
   useEffect(() => {
     if (map.current && lat && lon) {
       map.current.setView([parseFloat(lat), parseFloat(lon)], 14);
     }
   }, [lat, lon]);
-
   useEffect(() => {
     if (map.current && analysisResult?.geometry) {
       // Remove existing field layer
@@ -101,16 +108,19 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
       }).addTo(map.current);
 
       // Fit map to polygon bounds
-      map.current.fitBounds(fieldLayer.current.getBounds(), { padding: [50, 50] });
+      map.current.fitBounds(fieldLayer.current.getBounds(), {
+        padding: [50, 50]
+      });
     }
   }, [analysisResult]);
-
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     setAnalysisResult(null);
-
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-field-conditions', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('analyze-field-conditions', {
         body: {
           lat: parseFloat(lat),
           lon: parseFloat(lon),
@@ -118,28 +128,25 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
           crop
         }
       });
-
       if (error) {
         throw error;
       }
-
       setAnalysisResult(data);
       toast({
         title: '✅ Analysis Complete',
-        description: 'Field conditions analyzed successfully',
+        description: 'Field conditions analyzed successfully'
       });
     } catch (error: any) {
       console.error('Analysis error:', error);
       toast({
         title: '❌ Analysis Failed',
         description: error.message || 'Failed to analyze field conditions',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'green':
@@ -152,7 +159,6 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
         return '⚪';
     }
   };
-
   const getStatusVariant = (status: string): "default" | "secondary" | "destructive" => {
     switch (status) {
       case 'green':
@@ -165,19 +171,15 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
         return 'secondary';
     }
   };
-
   const getRecommendationIcon = () => {
     if (!analysisResult) return '📊';
     const allGreen = Object.values(analysisResult.comparison).every(v => v.status === 'green');
     const anyRed = Object.values(analysisResult.comparison).some(v => v.status === 'red');
-    
     if (allGreen) return '✅';
     if (anyRed) return '🚨';
     return '⚠️';
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Input Form */}
       <Card>
         <CardHeader>
@@ -193,35 +195,15 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="lat">Latitude</Label>
-              <Input
-                id="lat"
-                type="number"
-                step="0.0001"
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                placeholder="41.68"
-              />
+              <Input id="lat" type="number" step="0.0001" value={lat} onChange={e => setLat(e.target.value)} placeholder="41.68" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lon">Longitude</Label>
-              <Input
-                id="lon"
-                type="number"
-                step="0.0001"
-                value={lon}
-                onChange={(e) => setLon(e.target.value)}
-                placeholder="2.28"
-              />
+              <Input id="lon" type="number" step="0.0001" value={lon} onChange={e => setLon(e.target.value)} placeholder="2.28" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="area">Field Area (m²)</Label>
-              <Input
-                id="area"
-                type="number"
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                placeholder="10000"
-              />
+              <Input id="area" type="number" value={area} onChange={e => setArea(e.target.value)} placeholder="10000" />
               <p className="text-xs text-muted-foreground">
                 {(parseFloat(area) / 10000).toFixed(2)} hectares
               </p>
@@ -244,43 +226,26 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
             </div>
           </div>
           
-          <Button 
-            onClick={handleAnalyze} 
-            disabled={isAnalyzing}
-            className="w-full"
-          >
-            {isAnalyzing ? (
-              <>
+          <Button onClick={handleAnalyze} disabled={isAnalyzing} className="w-full">
+            {isAnalyzing ? <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Analyzing Field...
-              </>
-            ) : (
-              <>
+              </> : <>
                 <Satellite className="mr-2 h-4 w-4" />
                 Analyze Field
-              </>
-            )}
+              </>}
           </Button>
         </CardContent>
       </Card>
 
       {/* Results Section */}
-      {analysisResult && (
-        <>
+      {analysisResult && <>
           {/* Map and Comparison Table */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Map */}
             <Card>
-              <CardHeader>
-                <CardTitle>Field Location</CardTitle>
-                <CardDescription>Analyzed area highlighted in green</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  ref={mapContainer} 
-                  className="w-full h-[400px] rounded-lg"
-                />
-              </CardContent>
+              
+              
             </Card>
 
             {/* Comparison Table */}
@@ -356,16 +321,12 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
                       {analysisResult.data_quality.data_sources.ndvi}
                     </Badge>
                   </div>
-                  {analysisResult.data_quality.has_interpolated_data && (
-                    <p className="text-yellow-600">
+                  {analysisResult.data_quality.has_interpolated_data && <p className="text-yellow-600">
                       ⚠️ Some data points were interpolated
-                    </p>
-                  )}
-                  {analysisResult.data_quality.oldest_data_age_days > 3 && (
-                    <p className="text-yellow-600">
+                    </p>}
+                  {analysisResult.data_quality.oldest_data_age_days > 3 && <p className="text-yellow-600">
                       ⚠️ Data is {analysisResult.data_quality.oldest_data_age_days} days old
-                    </p>
-                  )}
+                    </p>}
                 </div>
               </CardContent>
             </Card>
@@ -384,10 +345,7 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
               </p>
             </CardContent>
           </Card>
-        </>
-      )}
-    </div>
-  );
+        </>}
+    </div>;
 };
-
 export default RealMonitoring;

@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Satellite, TrendingUp, Droplet, Thermometer } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface ComparisonData {
   soil_moisture: { real: string; optimal: string; status: string };
@@ -48,73 +48,60 @@ const RealMonitoring = ({ initialLat, initialLon, initialCrop }: RealMonitoringP
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<L.Map | null>(null);
+  const fieldLayer = useRef<L.Polygon | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Initialize Mapbox map
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      center: [parseFloat(lon), parseFloat(lat)],
-      zoom: 14
-    });
+    // Initialize Leaflet map
+    map.current = L.map(mapContainer.current).setView(
+      [parseFloat(lat), parseFloat(lon)],
+      14
+    );
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    // Add OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map.current);
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     if (map.current && lat && lon) {
-      map.current.setCenter([parseFloat(lon), parseFloat(lat)]);
+      map.current.setView([parseFloat(lat), parseFloat(lon)], 14);
     }
   }, [lat, lon]);
 
   useEffect(() => {
     if (map.current && analysisResult?.geometry) {
-      // Remove existing layers
-      if (map.current.getLayer('field-boundary')) {
-        map.current.removeLayer('field-boundary');
+      // Remove existing field layer
+      if (fieldLayer.current) {
+        map.current.removeLayer(fieldLayer.current);
+        fieldLayer.current = null;
       }
-      if (map.current.getSource('field-area')) {
-        map.current.removeSource('field-area');
-      }
+
+      // Convert coordinates for Leaflet (lat, lon instead of lon, lat)
+      const coordinates = analysisResult.geometry.coordinates[0];
+      const leafletCoords: [number, number][] = coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
 
       // Add field boundary polygon
-      map.current.addSource('field-area', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: analysisResult.geometry
-        }
-      });
+      fieldLayer.current = L.polygon(leafletCoords, {
+        color: '#00ff00',
+        weight: 3,
+        fillColor: '#00ff00',
+        fillOpacity: 0.1
+      }).addTo(map.current);
 
-      map.current.addLayer({
-        id: 'field-boundary',
-        type: 'line',
-        source: 'field-area',
-        paint: {
-          'line-color': '#00ff00',
-          'line-width': 3
-        }
-      });
-
-      // Fit map to geometry bounds
-      const coordinates = analysisResult.geometry.coordinates[0];
-      const bounds = coordinates.reduce(
-        (bounds: mapboxgl.LngLatBounds, coord: [number, number]) => {
-          return bounds.extend(coord);
-        },
-        new mapboxgl.LngLatBounds(coordinates[0], coordinates[0])
-      );
-      map.current.fitBounds(bounds, { padding: 50 });
+      // Fit map to polygon bounds
+      map.current.fitBounds(fieldLayer.current.getBounds(), { padding: [50, 50] });
     }
   }, [analysisResult]);
 

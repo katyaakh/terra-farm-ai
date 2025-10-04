@@ -26,18 +26,7 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (agentMessages.length === 0) {
-      setTimeout(() => {
-        addAgentMessage("👋 Hello! I'm Terra, your AI farming advisor powered by NASA satellite data!");
-      }, 500);
-      setTimeout(() => {
-        addAgentMessage("I offer two powerful tools: 1) Game Simulator - Learn farming with historical data, 2) Real Monitoring - Connect your farm and get daily insights with forecasts!");
-      }, 2000);
-      setTimeout(() => {
-        addAgentMessage("Both tools are FREE and use real NASA satellite data (SMAP, MODIS, GPM). You can chat with me anytime for advice and forecasts!");
-      }, 4000);
-    }
-  }, []);
+   }, []);
 
   const handleModeSelect = (mode: 'simulation' | 'monitoring') => {
     navigate('/setup', { state: { mode } });

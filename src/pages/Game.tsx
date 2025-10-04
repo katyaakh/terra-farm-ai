@@ -119,6 +119,7 @@ const Game = () => {
           setEnvScore(prev => Math.max(0, prev - 5));
         } else {
           addAgentMessage('❌ Insufficient budget for irrigation!', 'error');
+          return; // Don't advance day if action failed
         }
         break;
       case 'fertilize':
@@ -130,6 +131,7 @@ const Game = () => {
           setEnvScore(prev => Math.max(0, prev - 3));
         } else {
           addAgentMessage('❌ Insufficient budget for fertilizer!', 'error');
+          return; // Don't advance day if action failed
         }
         break;
       case 'monitor':
@@ -140,6 +142,30 @@ const Game = () => {
         addAgentMessage('⏳ Letting nature take its course...', 'info');
         addActivityLog('No action taken this day', 'info');
         break;
+    }
+
+    // Advance to next day after action
+    const nextDay = currentDay + 1;
+    setCurrentDay(nextDay);
+    
+    // Simulate the day's conditions
+    simulateDay();
+
+    // Check if harvest is complete
+    if (nextDay >= state.crop.growthDays) {
+      const quality = calculateQuality();
+      setTimeout(() => {
+        navigate('/results', {
+          state: {
+            ...state,
+            finalDay: nextDay,
+            finalBudget: budget,
+            finalEnvScore: envScore,
+            quality,
+            plantHealth
+          }
+        });
+      }, 1000);
     }
   };
 

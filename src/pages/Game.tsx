@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
 import AgentChat from '@/components/AgentChat';
-import { Droplet, ThermometerSun, Leaf, TrendingUp, BarChart3, Sprout } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Droplet, Leaf, Zap } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const Game = () => {
   const location = useLocation();
@@ -177,235 +178,182 @@ const Game = () => {
   return (
     <div className="h-screen w-full bg-gradient-to-b from-amber-900 via-yellow-800 to-green-700 flex flex-col overflow-hidden">
       {/* Fixed Header */}
-      <div className="bg-card/95 backdrop-blur px-3 py-2 flex items-center justify-between gap-2 border-b">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-bold text-card-foreground truncate">{state.farmName}</h1>
-          <p className="text-xs text-muted-foreground truncate">
-            {state.location.name}
-          </p>
+      <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-sm font-bold text-card-foreground truncate">{state.farmName}</h1>
+            <p className="text-xs text-muted-foreground truncate">{state.location.name}</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-primary">Day {currentDay}</p>
+            <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-lg font-bold text-primary">Day {currentDay}</p>
-          <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
+        
+        {/* Progress bar */}
+        <div className="w-full bg-muted rounded-full h-1.5">
+          <div 
+            className="bg-gradient-to-r from-primary to-accent h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          ></div>
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-muted h-1">
-        <div 
-          className="bg-gradient-to-r from-primary to-accent h-1 transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        ></div>
+      {/* Data Stats - Top */}
+      <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
+        <div className="grid grid-cols-2 gap-2">
+          {/* NASA Data */}
+          <div className="space-y-1.5">
+            <div>
+              <div className="flex justify-between text-xs mb-0.5">
+                <span className="text-muted-foreground">Soil 💧</span>
+                <span className="font-bold">{soilMoisture.toFixed(0)}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1">
+                <div 
+                  className={`h-1 rounded-full transition-all ${soilMoisture > 60 ? 'bg-accent' : soilMoisture > 30 ? 'bg-primary' : 'bg-destructive'}`}
+                  style={{ width: `${soilMoisture}%` }}
+                ></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-0.5">
+                <span className="text-muted-foreground">NDVI 🌿</span>
+                <span className="font-bold">{ndvi.toFixed(2)}</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1">
+                <div 
+                  className={`h-1 rounded-full transition-all ${ndvi > 0.7 ? 'bg-primary' : ndvi > 0.5 ? 'bg-accent' : 'bg-destructive'}`}
+                  style={{ width: `${ndvi * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Farm Metrics */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Budget</span>
+              <span className={`text-xs font-bold ${budget > 5000 ? 'text-primary' : 'text-destructive'}`}>
+                €{budget.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Quality</span>
+              <span className="text-xs font-bold">{calculateQuality()}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">Temp</span>
+              <span className="text-xs font-bold">{temperature.toFixed(1)}°C</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs defaultValue="farm" className="h-full flex flex-col">
-          <TabsList className="w-full grid grid-cols-3 rounded-none bg-card/95">
-            <TabsTrigger value="farm" className="text-xs">
-              <Sprout className="w-4 h-4 mr-1" />
-              Farm
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs">
-              <BarChart3 className="w-4 h-4 mr-1" />
-              Data
-            </TabsTrigger>
-            <TabsTrigger value="actions" className="text-xs">
-              <Droplet className="w-4 h-4 mr-1" />
-              Actions
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
+        {/* Plant Visualization - Smaller */}
+        <div className="w-48 h-48 flex items-center justify-center">
+          <PlantVisualization 
+            health={plantHealth}
+            day={currentDay}
+            selectedCrop={state.crop}
+          />
+        </div>
 
-          {/* Farm View */}
-          <TabsContent value="farm" className="flex-1 overflow-hidden m-0 p-3">
-            <div className="h-full flex flex-col gap-3">
-              {/* Plant Visualization */}
-              <div className="flex-1 bg-card/95 backdrop-blur rounded-lg flex items-center justify-center">
-                <PlantVisualization 
-                  health={plantHealth}
-                  day={currentDay}
-                  selectedCrop={state.crop}
-                />
-              </div>
-
-              {/* Compact Status */}
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3">
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Crop</p>
-                    <p className="font-bold">{state.crop.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Health</p>
-                    <p className={`font-bold ${
-                      plantHealth === 'excellent' ? 'text-primary' :
-                      plantHealth === 'good' ? 'text-accent' :
-                      plantHealth === 'fair' ? 'text-yellow-600' :
-                      'text-destructive'
-                    }`}>
-                      {plantHealth.toUpperCase()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Budget</p>
-                    <p className={`font-bold ${budget > 5000 ? 'text-primary' : 'text-destructive'}`}>
-                      €{budget.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Quality</p>
-                    <p className="font-bold">{calculateQuality()}%</p>
-                  </div>
-                </div>
-              </div>
+        {/* Compact Status */}
+        <div className="mt-4 bg-card/95 backdrop-blur rounded-lg p-3 w-full max-w-sm">
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <div>
+              <p className="text-xs text-muted-foreground">Crop</p>
+              <p className="font-bold text-sm">{state.crop.name}</p>
             </div>
-          </TabsContent>
-
-          {/* Stats View */}
-          <TabsContent value="stats" className="flex-1 overflow-auto m-0 p-3">
-            <div className="space-y-3">
-              {/* NASA Data */}
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3">
-                <h3 className="font-bold text-sm mb-2 flex items-center gap-1">
-                  🛰️ NASA Data
-                </h3>
-                <div className="space-y-2">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Soil Moisture</span>
-                      <span className="font-bold">{soilMoisture.toFixed(1)}%</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-1.5">
-                      <div 
-                        className={`h-1.5 rounded-full transition-all ${soilMoisture > 60 ? 'bg-accent' : soilMoisture > 30 ? 'bg-primary' : 'bg-destructive'}`}
-                        style={{ width: `${soilMoisture}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">NDVI</span>
-                      <span className="font-bold">{ndvi.toFixed(2)}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-1.5">
-                      <div 
-                        className={`h-1.5 rounded-full transition-all ${ndvi > 0.7 ? 'bg-primary' : ndvi > 0.5 ? 'bg-accent' : 'bg-destructive'}`}
-                        style={{ width: `${ndvi * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Temperature</span>
-                      <span className="font-bold">{temperature.toFixed(1)}°C</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Farm Metrics */}
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3">
-                <h3 className="font-bold text-sm mb-2">Metrics</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-2 p-2 bg-secondary/50 rounded">
-                    <Droplet className="text-accent w-4 h-4" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Water</p>
-                      <p className="text-sm font-bold">{waterReserve}%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 p-2 bg-secondary/50 rounded">
-                    <Leaf className="text-primary w-4 h-4" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Env Score</p>
-                      <p className="text-sm font-bold">{envScore}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activity Log */}
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3">
-                <h3 className="font-bold text-sm mb-2">Activity Log</h3>
-                <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                  {activityLog.slice(-5).reverse().map((log, idx) => (
-                    <div key={idx} className={`text-xs p-2 rounded ${
-                      log.type === 'success' ? 'bg-primary/10 text-primary' :
-                      log.type === 'warning' ? 'bg-accent/10 text-accent' :
-                      log.type === 'error' ? 'bg-destructive/10 text-destructive' :
-                      'bg-secondary/50'
-                    }`}>
-                      <span className="font-semibold">D{log.day}:</span> {log.message}
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Health</p>
+              <p className={`font-bold text-sm ${
+                plantHealth === 'excellent' ? 'text-primary' :
+                plantHealth === 'good' ? 'text-accent' :
+                plantHealth === 'fair' ? 'text-yellow-600' :
+                'text-destructive'
+              }`}>
+                {plantHealth.toUpperCase()}
+              </p>
             </div>
-          </TabsContent>
+          </div>
+        </div>
 
-          {/* Actions View */}
-          <TabsContent value="actions" className="flex-1 overflow-hidden m-0 p-3">
-            <div className="h-full flex flex-col gap-3">
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3">
-                <h3 className="font-bold text-sm mb-3">Farm Actions</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleAction('irrigate')}
-                    disabled={budget < 200}
-                    className="p-4 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-foreground rounded-lg transition-opacity font-semibold"
-                  >
-                    <div className="text-2xl mb-1">💧</div>
-                    <div className="text-sm">Irrigate</div>
-                    <div className="text-xs opacity-75">€200</div>
-                  </button>
+        {/* Actions Button */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="mt-4 w-full max-w-sm" size="lg">
+              <Zap className="mr-2 w-5 h-5" />
+              Farm Actions
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Farm Management</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-3 pt-4">
+              <button
+                onClick={() => handleAction('irrigate')}
+                disabled={budget < 200}
+                className="p-4 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-foreground rounded-lg transition-opacity font-semibold"
+              >
+                <div className="text-2xl mb-1">💧</div>
+                <div className="text-sm">Irrigate</div>
+                <div className="text-xs opacity-75">€200</div>
+              </button>
 
-                  <button
-                    onClick={() => handleAction('fertilize')}
-                    disabled={budget < 300}
-                    className="p-4 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-opacity font-semibold"
-                  >
-                    <div className="text-2xl mb-1">🌿</div>
-                    <div className="text-sm">Fertilize</div>
-                    <div className="text-xs opacity-75">€300</div>
-                  </button>
+              <button
+                onClick={() => handleAction('fertilize')}
+                disabled={budget < 300}
+                className="p-4 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-opacity font-semibold"
+              >
+                <div className="text-2xl mb-1">🌿</div>
+                <div className="text-sm">Fertilize</div>
+                <div className="text-xs opacity-75">€300</div>
+              </button>
 
-                  <button
-                    onClick={() => handleAction('monitor')}
-                    className="p-4 bg-secondary hover:opacity-90 text-secondary-foreground rounded-lg transition-opacity font-semibold"
-                  >
-                    <div className="text-2xl mb-1">📊</div>
-                    <div className="text-sm">Monitor</div>
-                    <div className="text-xs opacity-75">Free</div>
-                  </button>
+              <button
+                onClick={() => handleAction('monitor')}
+                className="p-4 bg-secondary hover:opacity-90 text-secondary-foreground rounded-lg transition-opacity font-semibold"
+              >
+                <div className="text-2xl mb-1">📊</div>
+                <div className="text-sm">Monitor</div>
+                <div className="text-xs opacity-75">Free</div>
+              </button>
 
-                  <button
-                    onClick={() => handleAction('wait')}
-                    className="p-4 bg-muted hover:opacity-90 text-muted-foreground rounded-lg transition-opacity font-semibold"
-                  >
-                    <div className="text-2xl mb-1">⏳</div>
-                    <div className="text-sm">Wait</div>
-                    <div className="text-xs opacity-75">No cost</div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="bg-card/95 backdrop-blur rounded-lg p-3 flex-1 flex items-center">
-                <div className="w-full">
-                  <div className="text-xs text-muted-foreground mb-2">Expected Quality</div>
-                  <div className="w-full bg-muted rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-destructive via-accent to-primary h-3 rounded-full transition-all flex items-center justify-end pr-2"
-                      style={{ width: `${calculateQuality()}%` }}
-                    >
-                      <span className="text-xs font-bold text-white">{calculateQuality()}%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={() => handleAction('wait')}
+                className="p-4 bg-muted hover:opacity-90 text-muted-foreground rounded-lg transition-opacity font-semibold"
+              >
+                <div className="text-2xl mb-1">⏳</div>
+                <div className="text-sm">Wait</div>
+                <div className="text-xs opacity-75">No cost</div>
+              </button>
             </div>
-          </TabsContent>
-        </Tabs>
+          </DialogContent>
+        </Dialog>
+
+        {/* Activity Log Compact */}
+        <div className="mt-4 w-full max-w-sm">
+          <div className="bg-card/95 backdrop-blur rounded-lg p-2">
+            <h3 className="font-bold text-xs mb-2 text-muted-foreground">Recent Activity</h3>
+            <div className="space-y-1 max-h-20 overflow-y-auto">
+              {activityLog.slice(-3).reverse().map((log, idx) => (
+                <div key={idx} className={`text-xs p-1.5 rounded ${
+                  log.type === 'success' ? 'bg-primary/10 text-primary' :
+                  log.type === 'warning' ? 'bg-accent/10 text-accent' :
+                  log.type === 'error' ? 'bg-destructive/10 text-destructive' :
+                  'bg-secondary/50'
+                }`}>
+                  <span className="font-semibold">D{log.day}:</span> {log.message}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       <AgentChat 

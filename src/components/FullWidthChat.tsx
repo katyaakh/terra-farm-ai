@@ -1,4 +1,4 @@
-import { Send, Sprout, Droplet, MessageCircle, FileText } from 'lucide-react';
+import { Send, Sprout, Droplet, MessageCircle, FileText, EyeOff } from 'lucide-react';
 import { AgentMessage } from '@/types/game';
 import { useState } from 'react';
 import TerranautAvatar from './TerranautAvatar';
@@ -141,6 +141,10 @@ const FullWidthChat = ({
             <button onClick={() => setIsChatExpanded(!isChatExpanded)} className="flex flex-col items-center gap-1 p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all">
               <MessageCircle size={20} />
               <span className="text-xs font-medium">Talk with Terra</span>
+            </button>
+            <button onClick={() => {}} className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all">
+              <EyeOff size={20} />
+              <span className="text-xs font-medium">Monitor, do nothing</span>
             </button>
           </div>
         </div>

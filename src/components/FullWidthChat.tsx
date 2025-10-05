@@ -106,13 +106,7 @@ const FullWidthChat = ({
   return <div className="fixed bottom-0 left-0 right-0 w-full h-[40vh] md:h-[30vh] bg-card border-t border-border shadow-2xl z-50">
       <div className="h-full flex flex-col">
         {/* Chat Header with Avatar */}
-        <div className="bg-gradient-to-r from-primary to-accent p-2 flex items-center gap-3">
-          
-          <div className="flex-1">
-            <p className="font-bold text-sm text-primary-foreground">Terra AI</p>
-            <p className="text-xs text-primary-foreground/80">Your Farming Assistant</p>
-          </div>
-        </div>
+        
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-3 bg-muted/30">

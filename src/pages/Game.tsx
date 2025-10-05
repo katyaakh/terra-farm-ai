@@ -441,6 +441,7 @@ const Game = () => {
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-bold text-primary-foreground truncate">Gaming Simulation</h1>
             <p className="text-xs text-primary-foreground/80 truncate">{state.crop.name}</p>
+            <p className="text-xs text-primary-foreground/70 truncate">{state.location.name} ({state.location.lat}°N, {state.location.lon}°E)</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-white">Day {currentDay}</p>

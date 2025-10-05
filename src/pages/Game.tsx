@@ -464,7 +464,7 @@ const Game = () => {
               <TrendingUp className="w-4 h-4 text-green-600" />
               <span className="text-xs text-gray-600">Budget</span>
             </div>
-            <p className={`text-xl font-bold ${budget > 5000 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-xl font-bold ${budget > 5000 ? 'text-green-600  break-words' : 'text-red-600 break-words'}`}>
               €{budget.toLocaleString()}
             </p>
           </div>
@@ -491,7 +491,7 @@ const Game = () => {
           <div className="bg-white rounded-lg p-3 shadow-md border border-gray-100">
             <div className="flex items-center gap-2 mb-2">
               <Thermometer className="w-4 h-4 text-orange-600" />
-              <span className="text-xs text-gray-600">Temperature</span>
+              <span className="text-xs text-gray-600  break-words">Temperature</span>
             </div>
             <p className="text-xl font-bold text-orange-600">
               {temperature.toFixed(1)}°C
@@ -520,7 +520,7 @@ const Game = () => {
                 <p className="text-[10px] text-blue-600">Root zone, 9km res, 3-day lag</p>
               </div>
             </div>
-            <div className="flex-wrap items-end justify-between">
+            <div className="flex items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">{soilMoisture.toFixed(0)}%</p>
               <Badge className={`${soilMoisture < 40 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                 {soilMoisture < 40 ? 'Critical' : 'Good'}
@@ -543,7 +543,7 @@ const Game = () => {
                 <p className="text-[10px] text-green-600">Vegetation health, 250m res</p>
               </div>
             </div>
-            <div className="flex-wrap items-end justify-between">
+            <div className="flex items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">{ndvi.toFixed(2)}</p>
               <Badge className={`${ndvi < 0.5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                 {ndvi < 0.5 ? 'Moderate' : 'Healthy'}
@@ -566,7 +566,7 @@ const Game = () => {
                 <p className="text-[10px] text-sky-600">Recent rainfall, 10km res</p>
               </div>
             </div>
-            <div className="flex-wrap items-end justify-between">
+            <div className="flex items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">0mm</p>
               <Badge className="bg-gray-100 text-gray-700">No Rain</Badge>
             </div>

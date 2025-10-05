@@ -47,6 +47,8 @@ const Game = () => {
   const { toast } = useToast();
   const [showNasaInfo, setShowNasaInfo] = useState(false);
   const [isLogExpanded, setIsLogExpanded] = useState(false);
+  const [currentActionEffect, setCurrentActionEffect] = useState<'water' | 'fertilize' | 'monitor' | null>(null);
+
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -361,6 +363,8 @@ const Game = () => {
     switch (action) {
       case 'irrigate':
         if (budget >= 200) {
+          setCurrentActionEffect('water');
+          setTimeout(() => setCurrentActionEffect(null), 2000);
           setSoilMoisture(prev => Math.min(100, prev + 25));
           setBudget(prev => prev - 200);
           addAgentMessage('💧 Irrigation applied! Soil moisture increased.', 'success');
@@ -373,6 +377,8 @@ const Game = () => {
         break;
       case 'fertilize':
         if (budget >= 300) {
+          setCurrentActionEffect('fertilize');
+          setTimeout(() => setCurrentActionEffect(null), 2000);
           setNdvi(prev => Math.min(0.9, prev + 0.1));
           setBudget(prev => prev - 300);
           addAgentMessage('🌿 Fertilizer applied! Plant health improving.', 'success');
@@ -384,6 +390,8 @@ const Game = () => {
         }
         break;
       case 'monitor':
+        setCurrentActionEffect('monitor');
+        setTimeout(() => setCurrentActionEffect(null), 2000);
         // Fetch real satellite data
         fetchSatelliteData();
         addAgentMessage(`📊 NASA Data: Moisture ${soilMoisture.toFixed(1)}%, NDVI ${ndvi.toFixed(2)}, Temp ${temperature.toFixed(1)}°C`, 'info');
@@ -629,6 +637,7 @@ const Game = () => {
             health={plantHealth}
             day={currentDay}
             selectedCrop={state.crop}
+            actionEffect={currentActionEffect}
           />
         </div>
 

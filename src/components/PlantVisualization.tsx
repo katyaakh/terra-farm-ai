@@ -1,15 +1,26 @@
 import { Crop, PlantHealth } from '@/types/game';
 import leafIcon from '@/assets/leaf-icon.svg';
 import greenLeaf from '@/assets/green-leaf.svg';
+import { useEffect, useState } from 'react';
 
 interface PlantVisualizationProps {
   health: PlantHealth;
   day: number;
   selectedCrop: Crop | null;
+  actionEffect?: 'water' | 'fertilize' | 'monitor' | null;
 }
 
-const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationProps) => {
+const PlantVisualization = ({ health, day, selectedCrop, actionEffect }: PlantVisualizationProps) => {
   const growthStage = Math.min(4, Math.floor((day / (selectedCrop?.growthDays || 50)) * 4));
+  const [showEffect, setShowEffect] = useState(false);
+  
+  useEffect(() => {
+    if (actionEffect) {
+      setShowEffect(true);
+      const timer = setTimeout(() => setShowEffect(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionEffect]);
   
   const healthColors = {
     excellent: { primary: '#22c55e', secondary: '#16a34a', leaves: '#86efac' },
@@ -23,6 +34,52 @@ const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationPro
   
   return (
     <div className="relative w-40 h-48 mx-auto">
+      {/* Monitor Effect - Shading Background */}
+      {showEffect && actionEffect === 'monitor' && (
+        <div className="absolute inset-0 bg-blue-500/20 rounded-lg animate-pulse" />
+      )}
+      
+      {/* Water Effect - Drops */}
+      {showEffect && actionEffect === 'water' && (
+        <>
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-fade-in"
+              style={{
+                left: `${20 + i * 15}%`,
+                top: `${10 + (i % 3) * 10}%`,
+                animation: `fade-in 0.5s ease-out ${i * 0.1}s, slide-down 1.5s ease-in ${i * 0.1}s`
+              }}
+            >
+              <div className="w-2 h-3 bg-blue-400 rounded-full opacity-70" />
+            </div>
+          ))}
+        </>
+      )}
+      
+      {/* Fertilize Effect - Sparkles */}
+      {showEffect && actionEffect === 'fertilize' && (
+        <>
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute"
+              style={{
+                left: `${10 + (i * 7) % 80}%`,
+                top: `${15 + (i * 11) % 70}%`,
+                animation: `scale-in 0.8s ease-out ${i * 0.05}s, fade-out 0.8s ease-out ${0.8 + i * 0.05}s`
+              }}
+            >
+              <div className="relative w-2 h-2">
+                <div className="absolute inset-0 bg-yellow-400 rotate-45 rounded-sm" />
+                <div className="absolute inset-0 bg-yellow-300" style={{ clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' }} />
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      
       <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-amber-900 to-amber-700 rounded-b-lg"></div>
       
       {growthStage >= 1 && (

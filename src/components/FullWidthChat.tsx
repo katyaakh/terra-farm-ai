@@ -134,28 +134,30 @@ const FullWidthChat = ({
         </div>
 
         {/* Farm Actions Button */}
-        <div className="p-2 bg-background border-t border-border">
+        <div className="p-3 bg-white border-t border-gray-200">
+          <button onClick={() => setShowActions(!showActions)} className="w-full bg-gradient-to-r from-primary via-green-600 to-accent hover:opacity-90 text-primary-foreground py-2 px-4 rounded-lg font-semibold text-sm transition-all shadow-md">
+            {showActions ? 'Hide' : 'Show'} Farm Actions
+          </button>
           
-          
-          {/* Action Buttons - No overlay */}
-          {showActions && <div className="grid grid-cols-4 gap-2 mt-2">
-              <button onClick={onWaterCrop} className="flex flex-col items-center gap-1 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all">
-                <Droplet size={20} />
+          {/* Action Buttons - Always visible */}
+          <div className="grid grid-cols-4 gap-2 mt-3">
+              <button onClick={onWaterCrop} className="flex flex-col items-center gap-1 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <Droplet size={24} />
                 <span className="text-xs font-medium">Water</span>
               </button>
-              <button onClick={onApplyFertilizer} className="flex flex-col items-center gap-1 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
-                <Sprout size={20} />
+              <button onClick={onApplyFertilizer} className="flex flex-col items-center gap-1 p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <Sprout size={24} />
                 <span className="text-xs font-medium">Fertilize</span>
               </button>
-              <button onClick={onCheckMarket} className="flex flex-col items-center gap-1 p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
-                <TrendingUp size={20} />
+              <button onClick={onCheckMarket} className="flex flex-col items-center gap-1 p-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <TrendingUp size={24} />
                 <span className="text-xs font-medium">Market</span>
               </button>
-              <button onClick={onViewLogs} className="flex flex-col items-center gap-1 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
-                <FileText size={20} />
+              <button onClick={onViewLogs} className="flex flex-col items-center gap-1 p-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <FileText size={24} />
                 <span className="text-xs font-medium">Logs</span>
               </button>
-            </div>}
+            </div>
         </div>
       </div>
     </div>;

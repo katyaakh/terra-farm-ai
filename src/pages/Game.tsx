@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import RealMonitoring from '@/components/RealMonitoring';
-
 const Game = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,7 +25,6 @@ const Game = () => {
     harvestDate: string;
     gameSessionId?: string;
   } | null;
-
   const [currentDay, setCurrentDay] = useState(1);
   const [budget, setBudget] = useState(10000);
   const [waterReserve, setWaterReserve] = useState(100);
@@ -44,11 +42,12 @@ const Game = () => {
   const [showFallbackButton, setShowFallbackButton] = useState(false);
   const [isGeneratingSynthetic, setIsGeneratingSynthetic] = useState(false);
   const [dataCheckAttempts, setDataCheckAttempts] = useState(0);
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [showNasaInfo, setShowNasaInfo] = useState(false);
   const [isLogExpanded, setIsLogExpanded] = useState(false);
   const [currentActionEffect, setCurrentActionEffect] = useState<'water' | 'fertilize' | 'monitor' | null>(null);
-
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -56,26 +55,25 @@ const Game = () => {
       navigate('/');
       return;
     }
-    
     addAgentMessage(`🌱 Welcome to ${state.farmName}! Your ${state.crop.name} journey begins. I'll guide you with NASA satellite data!`, 'success');
     addActivityLog(`Day 1: ${state.crop.name} planting started at ${state.location.name}`, 'info');
-    
+
     // Fetch real historical weather data
     fetchHistoricalWeatherData();
-    
+
     // Fetch and store satellite data if game session exists
     if (state.gameSessionId) {
       fetchAndStoreSatelliteData();
     }
   }, []);
-
   const fetchHistoricalWeatherData = async () => {
     if (!state) return;
-    
     try {
       addAgentMessage('📡 Fetching real NASA historical weather data...', 'info');
-      
-      const { data, error } = await supabase.functions.invoke('fetch-weather-data', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('fetch-weather-data', {
         body: {
           lat: state.location.lat,
           lon: state.location.lon,
@@ -84,18 +82,16 @@ const Game = () => {
           mode: 'history'
         }
       });
-
       if (error) {
         console.error('Weather data error:', error);
         addAgentMessage(`❌ Error fetching weather data: ${error.message}`, 'error');
         return;
       }
-
       if (data?.data) {
         console.log('Historical weather data received:', data.data);
         setHistoricalWeather(data.data);
         setWeatherLoaded(true);
-        
+
         // Set initial conditions from first day
         if (data.data.length > 0) {
           const firstDay = data.data[0];
@@ -109,33 +105,25 @@ const Game = () => {
       addAgentMessage(`❌ Failed to fetch weather data: ${error}`, 'error');
     }
   };
-
   const checkForRealData = async (): Promise<boolean> => {
     if (!state?.gameSessionId) return false;
-    
     try {
-      const { data, error } = await supabase
-        .from('satellite_data')
-        .select('data_source')
-        .eq('game_session_id', state.gameSessionId)
-        .eq('data_source', 'MODIS_REAL')
-        .limit(1);
-      
+      const {
+        data,
+        error
+      } = await supabase.from('satellite_data').select('data_source').eq('game_session_id', state.gameSessionId).eq('data_source', 'MODIS_REAL').limit(1);
       if (error) {
         console.error('Error checking for real data:', error);
         return false;
       }
-      
       return data && data.length > 0;
     } catch (error) {
       console.error('Error checking for real data:', error);
       return false;
     }
   };
-
   const fetchAndStoreSatelliteData = async (forceSynthetic = false) => {
     if (!state || !state.gameSessionId) return;
-    
     try {
       if (!forceSynthetic) {
         addAgentMessage('🛰️ Checking for uploaded satellite data...', 'info');
@@ -143,8 +131,10 @@ const Game = () => {
         setIsGeneratingSynthetic(true);
         addAgentMessage('🛰️ Generating synthetic satellite data...', 'info');
       }
-      
-      const { data, error } = await supabase.functions.invoke('store-satellite-data', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('store-satellite-data', {
         body: {
           game_session_id: state.gameSessionId,
           lat: state.location.lat,
@@ -153,33 +143,27 @@ const Game = () => {
           end_date: state.harvestDate
         }
       });
-
       if (error) {
         console.error('Satellite data error:', error);
         addAgentMessage(`❌ Error fetching satellite data: ${error.message}`, 'error');
         setIsGeneratingSynthetic(false);
         return;
       }
-
       if (data?.success) {
         console.log('Satellite data stored:', data);
         setSatelliteDataLoaded(true);
         setShowFallbackButton(false);
         setIsGeneratingSynthetic(false);
-        
+
         // Update initial NDVI from first day of satellite data
         if (data.data && data.data.length > 0) {
           const firstDay = data.data[0];
           setNdvi(firstDay.ndvi);
           setSoilMoisture(firstDay.soil_moisture * 100); // Convert to percentage
-          setTemperature(firstDay.lst_celsius || (firstDay.lst_kelvin - 273.15));
+          setTemperature(firstDay.lst_celsius || firstDay.lst_kelvin - 273.15);
           setDataSource(firstDay.data_source);
-          
           const sourceLabel = firstDay.data_source === 'MODIS_REAL' ? '🟢 Real NASA Data' : '🟡 Synthetic Data';
-          addAgentMessage(
-            `✅ ${sourceLabel}: Loaded ${data.records_created} days (NDVI, LST, soil moisture)`, 
-            'success'
-          );
+          addAgentMessage(`✅ ${sourceLabel}: Loaded ${data.records_created} days (NDVI, LST, soil moisture)`, 'success');
         }
       }
     } catch (error) {
@@ -192,7 +176,6 @@ const Game = () => {
   // Wait 30 seconds, then show fallback button if no real data exists
   useEffect(() => {
     if (!state?.gameSessionId || satelliteDataLoaded) return;
-    
     const timer = setTimeout(async () => {
       const hasRealData = await checkForRealData();
       if (!hasRealData && !satelliteDataLoaded) {
@@ -200,93 +183,84 @@ const Game = () => {
         addAgentMessage('⏱️ No real satellite data uploaded yet. You can generate synthetic data to continue.', 'warning');
       }
     }, 30000); // 30 seconds
-    
+
     return () => clearTimeout(timer);
   }, [state?.gameSessionId, satelliteDataLoaded]);
 
   // Poll for real data every 10 seconds
   useEffect(() => {
     if (!state?.gameSessionId || satelliteDataLoaded) return;
-    
     const pollInterval = setInterval(async () => {
       setDataCheckAttempts(prev => prev + 1);
       const hasRealData = await checkForRealData();
-      
       if (hasRealData) {
         addAgentMessage('🎉 Real satellite data detected! Loading...', 'success');
         fetchAndStoreSatelliteData(false);
       }
     }, 10000); // 10 seconds
-    
+
     return () => clearInterval(pollInterval);
   }, [state?.gameSessionId, satelliteDataLoaded]);
-
   const addAgentMessage = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-    setAgentMessages(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
+    setAgentMessages(prev => [...prev, {
+      text: message,
+      type,
+      timestamp: Date.now()
+    }]);
   };
-
   const addActivityLog = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-    setActivityLog(prev => [...prev, { message, type, day: currentDay }]);
+    setActivityLog(prev => [...prev, {
+      message,
+      type,
+      day: currentDay
+    }]);
   };
-
   const fetchSatelliteData = async () => {
     if (!state?.gameSessionId) return;
-    
     try {
       addAgentMessage('🛰️ Fetching stored satellite data...', 'info');
-      
+
       // Calculate which day's data to fetch based on current game day
       const gameStartDate = new Date(state.startDate);
       const currentDataDate = new Date(gameStartDate);
       currentDataDate.setDate(currentDataDate.getDate() + currentDay - 1);
       const targetDate = currentDataDate.toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
-        .from('satellite_data')
-        .select('*')
-        .eq('game_session_id', state.gameSessionId)
-        .eq('date', targetDate)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('satellite_data').select('*').eq('game_session_id', state.gameSessionId).eq('date', targetDate).single();
       if (error) {
         console.error('Satellite data error:', error);
         addAgentMessage(`❌ No data for day ${currentDay}: ${error.message}`, 'error');
         return;
       }
-
       if (data) {
         console.log(`Satellite data for day ${currentDay}:`, data);
-        
+
         // Update game state with data for current game day
         setNdvi(data.ndvi || ndvi);
         setSoilMoisture((data.soil_moisture || 0) * 100);
         setTemperature(data.lst_celsius || (data.lst_kelvin ? data.lst_kelvin - 273.15 : temperature));
-        
         const sourceLabel = data.data_source === 'MODIS_REAL' ? '🟢 Real NASA' : '🟡 Synthetic';
-        addAgentMessage(
-          `${sourceLabel} Day ${currentDay}: NDVI ${data.ndvi?.toFixed(2)}, Moisture ${((data.soil_moisture || 0) * 100).toFixed(1)}%, Temp ${(data.lst_celsius || 0).toFixed(1)}°C`,
-          'success'
-        );
+        addAgentMessage(`${sourceLabel} Day ${currentDay}: NDVI ${data.ndvi?.toFixed(2)}, Moisture ${((data.soil_moisture || 0) * 100).toFixed(1)}%, Temp ${(data.lst_celsius || 0).toFixed(1)}°C`, 'success');
       }
     } catch (error) {
       console.error('Error fetching satellite data:', error);
       addAgentMessage(`❌ Failed to fetch satellite data: ${error}`, 'error');
     }
   };
-
   const simulateDay = () => {
     // Use real historical weather data if available
     let newTemp = temperature;
     let newMoisture = soilMoisture;
-    
     if (weatherLoaded && historicalWeather.length > 0) {
       const dayIndex = Math.min(currentDay - 1, historicalWeather.length - 1);
       const dayWeather = historicalWeather[dayIndex];
-      
+
       // Use real NASA weather data
       newTemp = (dayWeather.Tmax_C + dayWeather.Tmin_C) / 2;
       setTemperature(newTemp);
-      
+
       // Update soil moisture based on real rainfall
       if (dayWeather.Rain_mm > 0) {
         newMoisture = Math.min(100, soilMoisture + dayWeather.Rain_mm * 2);
@@ -297,21 +271,19 @@ const Game = () => {
         newMoisture = Math.max(0, soilMoisture - 3);
       }
       setSoilMoisture(newMoisture);
-      
       addAgentMessage(`🌡️ Real weather: Temp ${newTemp.toFixed(1)}°C, Rain ${dayWeather.Rain_mm.toFixed(1)}mm, RH ${dayWeather.RH_pct.toFixed(0)}%`, 'info');
     } else {
       // Fallback to simulated weather if no real data
       const tempVariation = Math.random() * 10 - 5;
       newTemp = Math.max(15, Math.min(40, temperature + tempVariation));
       setTemperature(newTemp);
-      
       const moistureLoss = Math.random() * 5 + 2;
       newMoisture = Math.max(0, soilMoisture - moistureLoss);
       setSoilMoisture(newMoisture);
     }
 
     // Update NDVI based on health
-    const ndviChange = (newMoisture > 40 && newTemp > 20 && newTemp < 35) ? 0.02 : -0.01;
+    const ndviChange = newMoisture > 40 && newTemp > 20 && newTemp < 35 ? 0.02 : -0.01;
     const newNdvi = Math.max(0.3, Math.min(0.9, ndvi + ndviChange));
     setNdvi(newNdvi);
 
@@ -321,12 +293,23 @@ const Game = () => {
 
     // Random events
     if (Math.random() < 0.15) {
-      const events = [
-        { msg: '🌧️ Rain detected by GPM satellite! +15% soil moisture', moisture: 15, type: 'success' as const },
-        { msg: '☀️ Heat wave incoming! Temperature rising.', moisture: 0, type: 'warning' as const },
-        { msg: '💧 SMAP shows low soil moisture. Consider irrigation!', moisture: 0, type: 'warning' as const },
-        { msg: '🌿 MODIS shows excellent vegetation health!', moisture: 0, type: 'success' as const }
-      ];
+      const events = [{
+        msg: '🌧️ Rain detected by GPM satellite! +15% soil moisture',
+        moisture: 15,
+        type: 'success' as const
+      }, {
+        msg: '☀️ Heat wave incoming! Temperature rising.',
+        moisture: 0,
+        type: 'warning' as const
+      }, {
+        msg: '💧 SMAP shows low soil moisture. Consider irrigation!',
+        moisture: 0,
+        type: 'warning' as const
+      }, {
+        msg: '🌿 MODIS shows excellent vegetation health!',
+        moisture: 0,
+        type: 'success' as const
+      }];
       const event = events[Math.floor(Math.random() * events.length)];
       addAgentMessage(event.msg, event.type);
       addActivityLog(event.msg, event.type);
@@ -336,14 +319,13 @@ const Game = () => {
     }
 
     // Update environmental score
-    const newEnvScore = Math.round((newMoisture * 0.3 + newNdvi * 100 * 0.4 + (100 - Math.abs(newTemp - 25)) * 0.3));
+    const newEnvScore = Math.round(newMoisture * 0.3 + newNdvi * 100 * 0.4 + (100 - Math.abs(newTemp - 25)) * 0.3);
     setEnvScore(Math.max(0, Math.min(100, newEnvScore)));
 
     // Daily costs
     const dailyCost = 50;
     setBudget(prev => prev - dailyCost);
   };
-
   const calculateHealth = (moisture: number, ndviValue: number, temp: number): PlantHealth => {
     if (moisture >= 50 && ndviValue >= 0.7) return 'excellent';
     if (moisture >= 40 && ndviValue >= 0.6) return 'good';
@@ -351,14 +333,12 @@ const Game = () => {
     if (moisture >= 20 && ndviValue >= 0.4) return 'poor';
     return 'critical';
   };
-
   const calculateQuality = () => {
     const moistureScore = soilMoisture / 100;
     const ndviScore = ndvi;
-    const tempScore = state ? (Math.abs(temperature - (state.crop.optimalTemp[0] + state.crop.optimalTemp[1]) / 2) < 5 ? 1 : 0.7) : 0.7;
+    const tempScore = state ? Math.abs(temperature - (state.crop.optimalTemp[0] + state.crop.optimalTemp[1]) / 2) < 5 ? 1 : 0.7 : 0.7;
     return Math.round((moistureScore * 0.4 + ndviScore * 0.4 + tempScore * 0.2) * 100);
   };
-
   const handleAction = (action: string) => {
     switch (action) {
       case 'irrigate':
@@ -406,7 +386,7 @@ const Game = () => {
     // Advance to next day after action
     const nextDay = currentDay + 1;
     setCurrentDay(nextDay);
-    
+
     // Simulate the day's conditions
     simulateDay();
 
@@ -427,14 +407,9 @@ const Game = () => {
       }, 1000);
     }
   };
-
-
   if (!state) return null;
-
-  const progress = (currentDay / state.crop.growthDays) * 100;
-
-  return (
-    <div className="w-full bg-gradient-to-br from-primary via-secondary to-accent flex flex-col">{/* No padding */}
+  const progress = currentDay / state.crop.growthDays * 100;
+  return <div className="w-full bg-gradient-to-br from-primary via-secondary to-accent flex flex-col">{/* No padding */}
       {/* Fixed Header */}
       <div className="bg-gradient-to-r from-primary via-green-600 to-accent px-3 py-2 border-b border-white/20">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -451,17 +426,15 @@ const Game = () => {
         
         {/* Progress bar */}
         <div className="w-full bg-muted rounded-full h-1.5">
-          <div 
-            className="bg-gradient-to-r from-primary to-accent h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          ></div>
+          <div className="bg-gradient-to-r from-primary to-accent h-1.5 rounded-full transition-all duration-300" style={{
+          width: `${progress}%`
+        }}></div>
         </div>
       </div>
 
       {/* Game Session ID Card */}
       {/* Data Source Badge */}
-      {dataSource && (
-        <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
+      {dataSource && <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
           <Card className="border-primary/20">
             <CardContent className="p-3">
               <div className="flex items-center justify-between mb-2">
@@ -470,26 +443,17 @@ const Game = () => {
                   {dataSource === 'MODIS_REAL' ? '🟢 Real NASA Data' : '🟡 Synthetic Data'}
                 </Badge>
               </div>
-              {showFallbackButton && !satelliteDataLoaded && (
-                <div className="pt-2 border-t border-border/50">
+              {showFallbackButton && !satelliteDataLoaded && <div className="pt-2 border-t border-border/50">
                   <p className="text-xs text-muted-foreground mb-2">
                     No real data detected. Generate synthetic data to continue:
                   </p>
-                  <Button 
-                    className="w-full" 
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => fetchAndStoreSatelliteData(true)}
-                    disabled={isGeneratingSynthetic}
-                  >
+                  <Button className="w-full" size="sm" variant="secondary" onClick={() => fetchAndStoreSatelliteData(true)} disabled={isGeneratingSynthetic}>
                     {isGeneratingSynthetic ? 'Generating...' : '⚡ Generate Synthetic Data'}
                   </Button>
-                </div>
-              )}
+                </div>}
             </CardContent>
           </Card>
-        </div>
-      )}
+        </div>}
 
       {/* Main Indicators */}
       <div className="bg-white/95 backdrop-blur px-3 py-3 border-b">
@@ -540,12 +504,7 @@ const Game = () => {
       <div className="bg-white/95 backdrop-blur px-3 py-3 border-b">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold text-gray-800">NASA Satellite Data</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowNasaInfo(!showNasaInfo)}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setShowNasaInfo(!showNasaInfo)} className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
             <Info className="w-4 h-4 mr-1" />
             Show Data Info
           </Button>
@@ -568,14 +527,11 @@ const Game = () => {
               </Badge>
             </div>
             <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
-              <div 
-                className="h-1 rounded-full bg-blue-600 transition-all"
-                style={{ width: `${soilMoisture}%` }}
-              ></div>
+              <div className="h-1 rounded-full bg-blue-600 transition-all" style={{
+              width: `${soilMoisture}%`
+            }}></div>
             </div>
-            {showNasaInfo && (
-              <p className="text-[10px] text-blue-600 mt-2">Optimal range: 50-70% for most crops</p>
-            )}
+            {showNasaInfo && <p className="text-[10px] text-blue-600 mt-2">Optimal range: 50-70% for most crops</p>}
           </div>
 
           {/* MODIS NDVI */}
@@ -594,14 +550,11 @@ const Game = () => {
               </Badge>
             </div>
             <div className="w-full bg-green-200 rounded-full h-1 mt-2">
-              <div 
-                className="h-1 rounded-full bg-green-600 transition-all"
-                style={{ width: `${ndvi * 100}%` }}
-              ></div>
+              <div className="h-1 rounded-full bg-green-600 transition-all" style={{
+              width: `${ndvi * 100}%`
+            }}></div>
             </div>
-            {showNasaInfo && (
-              <p className="text-[10px] text-green-600 mt-2">Range: 0 (bare soil) to 0.85 (dense vegetation)</p>
-            )}
+            {showNasaInfo && <p className="text-[10px] text-green-600 mt-2">Range: 0 (bare soil) to 0.85 (dense vegetation)</p>}
           </div>
 
           {/* GPM Precipitation */}
@@ -618,14 +571,11 @@ const Game = () => {
               <Badge className="bg-gray-100 text-gray-700">No Rain</Badge>
             </div>
             <div className="w-full bg-sky-200 rounded-full h-1 mt-2">
-              <div 
-                className="h-1 rounded-full bg-sky-600 transition-all"
-                style={{ width: '0%' }}
-              ></div>
+              <div className="h-1 rounded-full bg-sky-600 transition-all" style={{
+              width: '0%'
+            }}></div>
             </div>
-            {showNasaInfo && (
-              <p className="text-[10px] text-sky-600 mt-2">Last 24 hours, updated every 30 min</p>
-            )}
+            {showNasaInfo && <p className="text-[10px] text-sky-600 mt-2">Last 24 hours, updated every 30 min</p>}
           </div>
         </div>
       </div>
@@ -634,12 +584,7 @@ const Game = () => {
       <div className="flex-1 flex flex-col p-4 overflow-hidden items-center justify-center bg-gradient-to-br from-white/20 via-white/10 to-transparent gap-3">
         {/* Plant Visualization - Smaller */}
         <div className="w-48 h-48 flex items-center justify-center">
-          <PlantVisualization 
-            health={plantHealth}
-            day={currentDay}
-            selectedCrop={state.crop}
-            actionEffect={currentActionEffect}
-          />
+          <PlantVisualization health={plantHealth} day={currentDay} selectedCrop={state.crop} actionEffect={currentActionEffect} />
         </div>
 
         {/* Compact Status */}
@@ -651,12 +596,7 @@ const Game = () => {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Health</p>
-              <p className={`font-bold text-sm ${
-                plantHealth === 'excellent' ? 'text-primary' :
-                plantHealth === 'good' ? 'text-accent' :
-                plantHealth === 'fair' ? 'text-yellow-600' :
-                'text-destructive'
-              }`}>
+              <p className={`font-bold text-sm ${plantHealth === 'excellent' ? 'text-primary' : plantHealth === 'good' ? 'text-accent' : plantHealth === 'fair' ? 'text-yellow-600' : 'text-destructive'}`}>
                 {plantHealth.toUpperCase()}
               </p>
             </div>
@@ -666,16 +606,9 @@ const Game = () => {
           <div className="border-t border-border pt-3">
             <p className="text-xs text-muted-foreground font-semibold mb-2">Recent Activity</p>
             <div className="space-y-1 max-h-32 overflow-y-auto">
-              {activityLog.slice(-3).reverse().map((log, idx) => (
-                <div key={idx} className={`text-xs p-1.5 rounded ${
-                  log.type === 'success' ? 'bg-primary/10 text-primary' :
-                  log.type === 'warning' ? 'bg-accent/10 text-accent' :
-                  log.type === 'error' ? 'bg-destructive/10 text-destructive' :
-                  'bg-secondary/50'
-                }`}>
+              {activityLog.slice(-3).reverse().map((log, idx) => <div key={idx} className={`text-xs p-1.5 rounded ${log.type === 'success' ? 'bg-primary/10 text-primary' : log.type === 'warning' ? 'bg-accent/10 text-accent' : log.type === 'error' ? 'bg-destructive/10 text-destructive' : 'bg-secondary/50'}`}>
                   <span className="font-semibold">D{log.day}:</span> {log.message}
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
@@ -684,49 +617,32 @@ const Game = () => {
         <div className="mt-4 w-full max-w-sm space-y-2">
           <Sheet>
             <SheetTrigger asChild>
-              <Button className="w-full" size="lg">
-                <Zap className="mr-2 w-5 h-5" />
-                Farm Actions
-              </Button>
+              
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-card/95 backdrop-blur border-t">
             <SheetHeader>
               <SheetTitle>Farm Management</SheetTitle>
             </SheetHeader>
             <div className="grid grid-cols-2 gap-3 pt-4 pb-6">
-              <button
-                onClick={() => handleAction('irrigate')}
-                disabled={budget < 200}
-                className="p-4 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-foreground rounded-lg transition-opacity font-semibold"
-              >
+              <button onClick={() => handleAction('irrigate')} disabled={budget < 200} className="p-4 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-accent-foreground rounded-lg transition-opacity font-semibold">
                 <div className="text-2xl mb-1">💧</div>
                 <div className="text-sm">Irrigate</div>
                 <div className="text-xs opacity-75">€200</div>
               </button>
 
-              <button
-                onClick={() => handleAction('fertilize')}
-                disabled={budget < 300}
-                className="p-4 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-opacity font-semibold"
-              >
+              <button onClick={() => handleAction('fertilize')} disabled={budget < 300} className="p-4 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-opacity font-semibold">
                 <div className="text-2xl mb-1">🌿</div>
                 <div className="text-sm">Fertilize</div>
                 <div className="text-xs opacity-75">€300</div>
               </button>
 
-              <button
-                onClick={() => handleAction('monitor')}
-                className="p-4 bg-secondary hover:opacity-90 text-secondary-foreground rounded-lg transition-opacity font-semibold"
-              >
+              <button onClick={() => handleAction('monitor')} className="p-4 bg-secondary hover:opacity-90 text-secondary-foreground rounded-lg transition-opacity font-semibold">
                 <div className="text-2xl mb-1">📊</div>
                 <div className="text-sm">Monitor</div>
                 <div className="text-xs opacity-75">Free</div>
               </button>
 
-              <button
-                onClick={() => handleAction('wait')}
-                className="p-4 bg-muted hover:opacity-90 text-muted-foreground rounded-lg transition-opacity font-semibold"
-              >
+              <button onClick={() => handleAction('wait')} className="p-4 bg-muted hover:opacity-90 text-muted-foreground rounded-lg transition-opacity font-semibold">
                 <div className="text-2xl mb-1">⏳</div>
                 <div className="text-sm">Wait</div>
                 <div className="text-xs opacity-75">No cost</div>
@@ -750,53 +666,27 @@ const Game = () => {
                 Live satellite data analysis for your field
               </DialogDescription>
             </DialogHeader>
-            <RealMonitoring 
-              initialLat={state.location.lat}
-              initialLon={state.location.lon}
-              initialCrop={state.crop.name.split(' ')[0].toLowerCase()}
-            />
+            <RealMonitoring initialLat={state.location.lat} initialLon={state.location.lon} initialCrop={state.crop.name.split(' ')[0].toLowerCase()} />
           </DialogContent>
         </Dialog>
         </div>
 
         {/* Activity Log Compact */}
         <div className="mt-2 w-full max-w-sm">
-          <div 
-            className="bg-card/95 backdrop-blur rounded-lg p-2 cursor-pointer hover:bg-card transition-colors"
-            onClick={() => setIsLogExpanded(!isLogExpanded)}
-          >
+          <div className="bg-card/95 backdrop-blur rounded-lg p-2 cursor-pointer hover:bg-card transition-colors" onClick={() => setIsLogExpanded(!isLogExpanded)}>
             <h3 className="font-bold text-xs mb-2 text-muted-foreground">Recent Activity {isLogExpanded ? '▼' : '▶'}</h3>
             <div className={`space-y-1 ${isLogExpanded ? 'max-h-60 overflow-y-auto' : 'max-h-auto'}`}>
-              {(isLogExpanded ? activityLog.slice().reverse() : activityLog.slice(-1)).map((log, idx) => (
-                <div key={idx} className={`text-xs p-1.5 rounded ${
-                  log.type === 'success' ? 'bg-primary/10 text-primary' :
-                  log.type === 'warning' ? 'bg-accent/10 text-accent' :
-                  log.type === 'error' ? 'bg-destructive/10 text-destructive' :
-                  'bg-secondary/50'
-                }`}>
+              {(isLogExpanded ? activityLog.slice().reverse() : activityLog.slice(-1)).map((log, idx) => <div key={idx} className={`text-xs p-1.5 rounded ${log.type === 'success' ? 'bg-primary/10 text-primary' : log.type === 'warning' ? 'bg-accent/10 text-accent' : log.type === 'error' ? 'bg-destructive/10 text-destructive' : 'bg-secondary/50'}`}>
                   <span className="font-semibold">D{log.day}:</span> {log.message}
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
       </div>
 
-      <FullWidthChat 
-        agentMessages={agentMessages}
-        mode={state.mode}
-        location={state.location}
-        onAddMessage={(msg) => setAgentMessages(prev => [...prev, msg])}
-        onWaterCrop={() => handleAction('irrigate')}
-        onApplyFertilizer={() => handleAction('fertilize')}
-        onMonitor={() => handleAction('monitor')}
-        onCheckMarket={() => handleAction('monitor')}
-        onViewLogs={() => {
-          console.log('Activity logs:', activityLog);
-        }}
-      />
-    </div>
-  );
+      <FullWidthChat agentMessages={agentMessages} mode={state.mode} location={state.location} onAddMessage={msg => setAgentMessages(prev => [...prev, msg])} onWaterCrop={() => handleAction('irrigate')} onApplyFertilizer={() => handleAction('fertilize')} onMonitor={() => handleAction('monitor')} onCheckMarket={() => handleAction('monitor')} onViewLogs={() => {
+      console.log('Activity logs:', activityLog);
+    }} />
+    </div>;
 };
-
 export default Game;

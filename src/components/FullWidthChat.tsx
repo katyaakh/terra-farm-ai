@@ -141,9 +141,9 @@ const FullWidthChat = ({
                 <Sprout size={20} />
                 <span className="text-xs font-medium">Fertilize</span>
               </button>
-              <button onClick={() => {}} className="flex flex-col items-center gap-1 p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
+              <button onClick={onCheckMarket} className="flex flex-col items-center gap-1 p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
                 <TrendingUp size={20} />
-                <span className="text-xs font-medium">Do Nothing Monitor</span>
+                <span className="text-xs font-medium">Market</span>
               </button>
               
             </div>}

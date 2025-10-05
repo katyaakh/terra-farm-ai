@@ -131,7 +131,7 @@ const FullWidthChat = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
-              <TerranautAvatar />
+              <img src="astro.jpg" alt="AstroNaut">
             </div>
             <div>
               <h2 className="text-xl font-bold">Terra AI Assistant</h2>

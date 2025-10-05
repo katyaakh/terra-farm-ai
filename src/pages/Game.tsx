@@ -643,7 +643,7 @@ const Game = () => {
         </div>
 
         {/* Compact Status */}
-        <div className="mt-4 bg-card/95 backdrop-blur rounded-lg p-3 w-full max-w-sm">
+        <div className="mt-4 bg-card/95 backdrop-blur rounded-lg p-3 w-full max-w-sm space-y-3">
           <div className="grid grid-cols-2 gap-3 text-center">
             <div>
               <p className="text-xs text-muted-foreground">Crop</p>
@@ -659,6 +659,23 @@ const Game = () => {
               }`}>
                 {plantHealth.toUpperCase()}
               </p>
+            </div>
+          </div>
+
+          {/* Activity Log */}
+          <div className="border-t border-border pt-3">
+            <p className="text-xs text-muted-foreground font-semibold mb-2">Recent Activity</p>
+            <div className="space-y-1 max-h-32 overflow-y-auto">
+              {activityLog.slice(-3).reverse().map((log, idx) => (
+                <div key={idx} className={`text-xs p-1.5 rounded ${
+                  log.type === 'success' ? 'bg-primary/10 text-primary' :
+                  log.type === 'warning' ? 'bg-accent/10 text-accent' :
+                  log.type === 'error' ? 'bg-destructive/10 text-destructive' :
+                  'bg-secondary/50'
+                }`}>
+                  <span className="font-semibold">D{log.day}:</span> {log.message}
+                </div>
+              ))}
             </div>
           </div>
         </div>

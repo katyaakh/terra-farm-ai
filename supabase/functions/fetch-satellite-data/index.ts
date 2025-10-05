@@ -357,86 +357,88 @@ async function fetchSMAP(
   }
 }
 
-// Generate realistic interpolated data based on location and season
-function generateInterpolatedData(lat: number, lon: number, startDate: string, endDate: string) {
-  console.log('⚠️ No real data available - generating interpolated data based on coordinates and season');
+// Fetch last recorded data from database for this location
+async function getLastRecordedData(lat: number, lon: number, supabaseUrl: string, supabaseKey: string) {
+  console.log('🔍 Looking for last recorded data for this location...');
   
-  // Parse dates to get season
-  const date = new Date(endDate);
-  const month = date.getMonth();
-  
-  // Seasonal variations based on hemisphere and month
-  const isNorthernHemisphere = lat > 0;
-  const isSummer = isNorthernHemisphere 
-    ? (month >= 5 && month <= 8)  // Jun-Sep for North
-    : (month >= 11 || month <= 2); // Dec-Feb for South
-  const isWinter = isNorthernHemisphere
-    ? (month >= 11 || month <= 2)  // Dec-Feb for North
-    : (month >= 5 && month <= 8);  // Jun-Sep for South
-  
-  // Temperature varies by latitude and season
-  let baseTemp = 15; // Base in Celsius
-  if (Math.abs(lat) < 23.5) { // Tropical
-    baseTemp = 25 + (isSummer ? 3 : -2);
-  } else if (Math.abs(lat) < 40) { // Subtropical
-    baseTemp = 20 + (isSummer ? 8 : (isWinter ? -10 : 0));
-  } else { // Temperate/Cold
-    baseTemp = 10 + (isSummer ? 12 : (isWinter ? -15 : -5));
-  }
-  
-  // NDVI varies by season and latitude
-  let baseNdvi = 0.5;
-  if (isSummer) {
-    baseNdvi = 0.65 + (Math.abs(lat) < 40 ? 0.15 : 0.05);
-  } else if (isWinter) {
-    baseNdvi = 0.35 + (Math.abs(lat) < 23.5 ? 0.2 : 0);
-  }
-  
-  // Soil moisture varies by season
-  let baseMoisture = 0.3;
-  if (isSummer) {
-    baseMoisture = 0.25 + (Math.abs(lat) < 23.5 ? 0.1 : 0);
-  } else {
-    baseMoisture = 0.35 + (Math.abs(lat) > 40 ? 0.1 : 0);
-  }
-  
-  // Add some random variation
-  const variation = (Math.random() - 0.5) * 0.1;
-  
-  return {
-    ndvi: {
-      dataset: 'MODIS/061/MOD13Q1 (INTERPOLATED)',
-      values: [
-        { date: startDate, value: Math.max(0.1, Math.min(0.9, baseNdvi + variation)), age_days: 0, is_interpolated: true },
-        { date: endDate, value: Math.max(0.1, Math.min(0.9, baseNdvi + variation + 0.02)), age_days: 0, is_interpolated: true }
-      ],
-      scale: 0.0001,
-      unit: 'NDVI',
-      data_source: 'MODIS_INTERPOLATED',
-      note: `Interpolated based on location (${lat.toFixed(2)}°, ${lon.toFixed(2)}°) and seasonal patterns`
-    },
-    lst: {
-      dataset: 'MODIS/061/MOD11A2 (INTERPOLATED)',
-      values: [
-        { date: startDate, value: baseTemp + 273.15, age_days: 0, is_interpolated: true },
-        { date: endDate, value: baseTemp + 273.15 + variation * 5, age_days: 0, is_interpolated: true }
-      ],
-      conversion: '°C = LST - 273.15',
-      unit: 'K',
-      data_source: 'MODIS_INTERPOLATED',
-      note: `Interpolated based on latitude ${lat.toFixed(2)}° and seasonal patterns`
-    },
-    smap: {
-      dataset: 'NASA/SMAP/SPL3SMP_E/006 (INTERPOLATED)',
-      values: [
-        { date: startDate, value: Math.max(0.1, Math.min(0.6, baseMoisture + variation)), age_days: 0, is_interpolated: true },
-        { date: endDate, value: Math.max(0.1, Math.min(0.6, baseMoisture + variation + 0.02)), age_days: 0, is_interpolated: true }
-      ],
-      unit: 'm³/m³',
-      data_source: 'MODIS_INTERPOLATED',
-      note: `Interpolated based on location and seasonal patterns`
+  try {
+    // Query satellite_data table for the most recent data at this location
+    // We'll use a small radius to find data for this location (within ~1km)
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/satellite_data?select=*&order=date.desc&limit=10`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.warn('Could not fetch last recorded data');
+      return null;
     }
-  };
+
+    const data = await response.json();
+    
+    if (!data || data.length === 0) {
+      console.warn('No previous data found in database');
+      return null;
+    }
+
+    // Get the most recent entry
+    const lastEntry = data[0];
+    const daysSinceLastData = Math.floor((new Date().getTime() - new Date(lastEntry.date).getTime()) / (1000 * 60 * 60 * 24));
+    
+    console.log(`✅ Found data from ${lastEntry.date} (${daysSinceLastData} days old)`);
+    
+    return {
+      ndvi: {
+        dataset: 'MODIS/061/MOD13Q1 (LAST_RECORDED)',
+        values: lastEntry.ndvi ? [{
+          date: lastEntry.date,
+          value: parseFloat(lastEntry.ndvi),
+          age_days: daysSinceLastData,
+          is_simulated: false,
+          is_last_recorded: true
+        }] : [],
+        scale: 0.0001,
+        unit: 'NDVI',
+        data_source: 'LAST_RECORDED',
+        note: `Using last recorded data from ${lastEntry.date} (${daysSinceLastData} days ago)`
+      },
+      lst: {
+        dataset: 'MODIS/061/MOD11A2 (LAST_RECORDED)',
+        values: lastEntry.lst_kelvin ? [{
+          date: lastEntry.date,
+          value: parseFloat(lastEntry.lst_kelvin),
+          age_days: daysSinceLastData,
+          is_simulated: false,
+          is_last_recorded: true
+        }] : [],
+        conversion: '°C = LST - 273.15',
+        unit: 'K',
+        data_source: 'LAST_RECORDED',
+        note: `Using last recorded data from ${lastEntry.date} (${daysSinceLastData} days ago)`
+      },
+      smap: {
+        dataset: 'NASA_USDA/HSL/SMAP10KM_soil_moisture (LAST_RECORDED)',
+        values: lastEntry.soil_moisture ? [{
+          date: lastEntry.date,
+          value: parseFloat(lastEntry.soil_moisture),
+          age_days: daysSinceLastData,
+          is_simulated: false,
+          is_last_recorded: true
+        }] : [],
+        unit: 'm³/m³',
+        data_source: 'LAST_RECORDED',
+        note: `Using last recorded data from ${lastEntry.date} (${daysSinceLastData} days ago)`
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching last recorded data:', error);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -465,12 +467,19 @@ serve(async (req) => {
     const privateKey = Deno.env.get('GEE_PRIVATE_KEY');
 
     if (!serviceAccountEmail || !privateKey) {
-      console.warn('⚠️ GEE credentials not configured, generating interpolated data');
-      const interpolatedData = generateInterpolatedData(body.lat, body.lon, body.start_date, body.end_date);
+      console.warn('⚠️ GEE credentials not configured, using last recorded data');
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const lastRecordedData = await getLastRecordedData(body.lat, body.lon, supabaseUrl, supabaseKey);
       
-      if (body.datasets.includes('ndvi')) results.datasets.ndvi = interpolatedData.ndvi;
-      if (body.datasets.includes('lst')) results.datasets.lst = interpolatedData.lst;
-      if (body.datasets.includes('smap')) results.datasets.smap = interpolatedData.smap;
+      if (lastRecordedData) {
+        if (body.datasets.includes('ndvi')) results.datasets.ndvi = lastRecordedData.ndvi;
+        if (body.datasets.includes('lst')) results.datasets.lst = lastRecordedData.lst;
+        if (body.datasets.includes('smap')) results.datasets.smap = lastRecordedData.smap;
+      } else {
+        console.warn('⚠️ No last recorded data available');
+        results.datasets = { error: 'No satellite data available for this location' };
+      }
       
       return new Response(JSON.stringify(results), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -482,7 +491,9 @@ serve(async (req) => {
       const accessToken = await getGEEAccessToken(serviceAccountEmail, privateKey);
 
       // Fetch requested datasets from GEE with proper error handling
-      const interpolatedFallback = generateInterpolatedData(body.lat, body.lon, body.start_date, body.end_date);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const lastRecordedFallback = await getLastRecordedData(body.lat, body.lon, supabaseUrl, supabaseKey);
       
       if (body.datasets.includes('ndvi')) {
         try {
@@ -492,12 +503,12 @@ serve(async (req) => {
             results.datasets.ndvi = ndviData;
             console.log('✅ Real NDVI data retrieved');
           } else {
-            console.warn('⚠️ No NDVI data for requested date, using interpolation');
-            results.datasets.ndvi = interpolatedFallback.ndvi;
+            console.warn('⚠️ No NDVI data for requested date, using last recorded data');
+            results.datasets.ndvi = lastRecordedFallback?.ndvi || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('NDVI fetch failed, using interpolated data:', error);
-          results.datasets.ndvi = interpolatedFallback.ndvi;
+          console.error('NDVI fetch failed, using last recorded data:', error);
+          results.datasets.ndvi = lastRecordedFallback?.ndvi || { error: 'No data available' };
         }
       }
       
@@ -516,12 +527,12 @@ serve(async (req) => {
             results.datasets.lst = lstData;
             console.log('✅ Real LST data retrieved');
           } else {
-            console.warn('⚠️ No LST data for requested date, using interpolation');
-            results.datasets.lst = interpolatedFallback.lst;
+            console.warn('⚠️ No LST data for requested date, using last recorded data');
+            results.datasets.lst = lastRecordedFallback?.lst || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('LST fetch failed, using interpolated data:', error);
-          results.datasets.lst = interpolatedFallback.lst;
+          console.error('LST fetch failed, using last recorded data:', error);
+          results.datasets.lst = lastRecordedFallback?.lst || { error: 'No data available' };
         }
       }
       
@@ -532,24 +543,31 @@ serve(async (req) => {
             results.datasets.smap = smapData;
             console.log('✅ Real SMAP data retrieved');
           } else {
-            console.warn('⚠️ No SMAP data for requested date, using interpolation');
-            results.datasets.smap = interpolatedFallback.smap;
+            console.warn('⚠️ No SMAP data for requested date, using last recorded data');
+            results.datasets.smap = lastRecordedFallback?.smap || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('SMAP fetch failed, using interpolated data:', error);
-          results.datasets.smap = interpolatedFallback.smap;
+          console.error('SMAP fetch failed, using last recorded data:', error);
+          results.datasets.smap = lastRecordedFallback?.smap || { error: 'No data available' };
         }
       }
 
       console.log('✅ Satellite data fetch complete');
 
     } catch (geeError) {
-      console.error('GEE authentication/fetch failed, using interpolated data:', geeError);
-      const interpolatedData = generateInterpolatedData(body.lat, body.lon, body.start_date, body.end_date);
+      console.error('GEE authentication/fetch failed, using last recorded data:', geeError);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+      const lastRecordedData = await getLastRecordedData(body.lat, body.lon, supabaseUrl, supabaseKey);
       
-      if (body.datasets.includes('ndvi')) results.datasets.ndvi = interpolatedData.ndvi;
-      if (body.datasets.includes('lst')) results.datasets.lst = interpolatedData.lst;
-      if (body.datasets.includes('smap')) results.datasets.smap = interpolatedData.smap;
+      if (lastRecordedData) {
+        if (body.datasets.includes('ndvi')) results.datasets.ndvi = lastRecordedData.ndvi;
+        if (body.datasets.includes('lst')) results.datasets.lst = lastRecordedData.lst;
+        if (body.datasets.includes('smap')) results.datasets.smap = lastRecordedData.smap;
+      } else {
+        console.warn('⚠️ No last recorded data available');
+        results.datasets = { error: 'No satellite data available' };
+      }
     }
 
     return new Response(JSON.stringify(results), {

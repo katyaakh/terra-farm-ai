@@ -1,5 +1,6 @@
 import { Crop, PlantHealth } from '@/types/game';
 import leafIcon from '@/assets/leaf-icon.svg';
+import greenLeaf from '@/assets/green-leaf.svg';
 
 interface PlantVisualizationProps {
   health: PlantHealth;
@@ -55,7 +56,12 @@ const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationPro
       {growthStage === 0 && (
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
           <div className="w-1.5 h-5" style={{ backgroundColor: colors.secondary }} />
-          <div className="w-6 h-6 -mt-1 rounded-full bg-gradient-to-br from-green-400 to-green-600" style={{ opacity: health === 'excellent' ? 1 : health === 'good' ? 0.9 : health === 'fair' ? 0.7 : health === 'poor' ? 0.5 : 0.3 }} />
+          <img 
+            src={greenLeaf} 
+            alt="leaf" 
+            className="w-6 h-6 -mt-1"
+            style={{ opacity: health === 'excellent' ? 1 : health === 'good' ? 0.9 : health === 'fair' ? 0.7 : health === 'poor' ? 0.5 : 0.3 }}
+          />
         </div>
       )}
       

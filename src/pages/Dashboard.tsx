@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, Database, LogOut, Satellite } from 'lucide-react';
+import { Play, Database, LogOut, Satellite, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TerranautAvatar from '@/components/TerranautAvatar';
 import AgentChat from '@/components/AgentChat';
@@ -71,7 +71,17 @@ const Index = () => {
             <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-2">
-                <div className="flex-1"></div>
+                <div className="flex-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => navigate('/')} 
+                    className="text-white hover:bg-white/20"
+                  >
+                    <Home className="h-4 w-4 mr-2" />
+                    Home
+                  </Button>
+                </div>
                 <h1 className="text-4xl font-bold tracking-tight flex-1">Terranaut</h1>
                 <div className="flex-1 flex justify-end">
                   <Button variant="ghost" size="sm" onClick={signOut} className="text-white hover:bg-white/20">

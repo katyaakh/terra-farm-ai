@@ -59,7 +59,7 @@ const PlantVisualization = ({ health, day, selectedCrop }: PlantVisualizationPro
           <img 
             src={greenLeaf} 
             alt="leaf" 
-            className="w-6 h-6 -mt-1"
+            className="w-6 h-6 -mt-1 scale-x-[-1]"
             style={{ opacity: health === 'excellent' ? 1 : health === 'good' ? 0.9 : health === 'fair' ? 0.7 : health === 'poor' ? 0.5 : 0.3 }}
           />
         </div>

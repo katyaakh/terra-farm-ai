@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { locations } from '@/data/gameData';
 import { Location } from '@/types/game';
 import { toast } from 'sonner';
@@ -16,6 +16,23 @@ const SetupLocation = () => {
   const [mapboxToken, setMapboxToken] = useState('');
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  
+  const fullMessage = "Hello, I'm helping you setup - you can add your farm and cropping step by step";
+  const [displayedText, setDisplayedText] = useState('');
+  
+  useEffect(() => {
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullMessage.length) {
+        setDisplayedText(fullMessage.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 30);
+    
+    return () => clearInterval(typingInterval);
+  }, []);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
@@ -106,7 +123,8 @@ const SetupLocation = () => {
             </div>
             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl p-6 border-2 border-primary/20">
               <p className="text-lg font-medium text-card-foreground leading-relaxed">
-                Hello, I'm helping you setup - you can add your farm and cropping step by step
+                {displayedText}
+                <span className="animate-pulse">|</span>
               </p>
             </div>
           </div>

@@ -125,7 +125,7 @@ const FullWidthChat = ({
   return <>
     {/* Chat Dialog Popup */}
     <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+      <DialogContent className="max-w-2xl max-h-[80vh] fixed bottom-0 top-auto translate-y-0 data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary">

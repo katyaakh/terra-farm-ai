@@ -193,8 +193,29 @@ const FullWidthChat = ({
 
     {/* Fixed Bottom Action Bar */}
     <div className="fixed bottom-0 left-0 right-0 w-full bg-card border-t border-border shadow-2xl z-50">
-      <div className="p-2 bg-background">
-        <div className="grid grid-cols-4 gap-2">
+      <div className="p-2 bg-background space-y-2">
+        {/* Last Action Preview & Chat Button */}
+        <div className="flex items-center justify-between gap-2 px-2">
+          <div className="flex-1 text-left">
+            <p className="text-xs text-muted-foreground">Last Action:</p>
+            <p className="text-sm font-medium text-foreground">
+              {agentMessages.length > 0 ? agentMessages[agentMessages.length - 1].text.slice(0, 50) + '...' : 'No actions yet'}
+            </p>
+          </div>
+          <button 
+            onClick={() => {
+              playSound(784);
+              setIsChatOpen(true);
+            }} 
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all active:scale-95 active:animate-scale-in"
+          >
+            <MessageCircle size={20} />
+            <span className="text-sm font-medium">Talk with Terra</span>
+          </button>
+        </div>
+
+        {/* Action Buttons Grid */}
+        <div className="grid grid-cols-3 gap-2">
           <button 
             onClick={() => {
               playSound(523);
@@ -214,16 +235,6 @@ const FullWidthChat = ({
           >
             <Sprout size={20} />
             <span className="text-xs font-medium">Fertilize</span>
-          </button>
-          <button 
-            onClick={() => {
-              playSound(784);
-              setIsChatOpen(true);
-            }} 
-            className="flex flex-col items-center gap-1 p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all active:scale-95 active:animate-scale-in"
-          >
-            <MessageCircle size={20} />
-            <span className="text-xs font-medium">Talk with Terra</span>
           </button>
           <button 
             onClick={() => {

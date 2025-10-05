@@ -141,22 +141,31 @@ const FullWidthChat = ({
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 bg-muted/30 rounded-lg max-h-[50vh]">
           <div className="space-y-3">
-            {agentMessages.slice(-10).map((msg, idx) => (
-              <div 
-                key={idx} 
-                className={`p-3 rounded-lg text-sm ${
-                  msg.type === 'error' 
-                    ? 'bg-destructive/10 text-destructive border border-destructive/20' 
-                    : msg.type === 'warning' 
-                    ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' 
-                    : msg.type === 'success' 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : 'bg-blue-50 text-blue-800 border border-blue-200'
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
+            {agentMessages.slice(-10).map((msg, idx) => {
+              const isUserMessage = msg.text.startsWith('You:');
+              return (
+                <div 
+                  key={idx} 
+                  className={`flex ${isUserMessage ? 'justify-start' : 'justify-end'}`}
+                >
+                  <div 
+                    className={`p-3 rounded-lg text-sm max-w-[80%] ${
+                      isUserMessage
+                        ? 'bg-blue-100 text-blue-900 border border-blue-200 rounded-tl-none'
+                        : msg.type === 'error' 
+                        ? 'bg-destructive/10 text-destructive border border-destructive/20 rounded-tr-none' 
+                        : msg.type === 'warning' 
+                        ? 'bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-tr-none' 
+                        : msg.type === 'success' 
+                        ? 'bg-green-50 text-green-800 border border-green-200 rounded-tr-none' 
+                        : 'bg-primary/10 text-primary border border-primary/20 rounded-tr-none'
+                    }`}
+                  >
+                    {isUserMessage ? msg.text.replace('You: ', '') : msg.text}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

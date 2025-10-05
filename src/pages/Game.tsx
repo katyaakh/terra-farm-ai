@@ -443,7 +443,7 @@ const Game = () => {
             <p className="text-xs text-primary-foreground/80 truncate">{state.location.name}</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-primary">Day {currentDay}</p>
+            <p className="text-lg font-bold text-white">Day {currentDay}</p>
             <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
           </div>
         </div>

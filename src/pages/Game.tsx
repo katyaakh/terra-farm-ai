@@ -439,7 +439,7 @@ const Game = () => {
       <div className="bg-gradient-to-r from-primary via-green-600 to-accent px-3 py-2 border-b border-white/20">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold text-primary-foreground truncate">{state.farmName}</h1>
+            <h1 className="text-sm font-bold text-primary-foreground truncate">Farm: {state.farmName}</h1>
             <p className="text-xs text-primary-foreground/80 truncate">{state.location.name}</p>
           </div>
           <div className="text-center">

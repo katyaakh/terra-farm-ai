@@ -111,7 +111,7 @@ const Index = () => {
             </div>
 
             {/* Avatar and Greeting */}
-            <div className="mb-6 bg-gradient-to-br from-primary via-secondary to-accent rounded-2xl p-6 border border-primary/20">
+            <div className="mb-6 bg-card/50 backdrop-blur rounded-2xl p-6 border border-primary/20">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-32 h-32 flex-shrink-0">
                   <video 
@@ -124,7 +124,7 @@ const Index = () => {
                   />
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <p className="text-lg text-primary-foreground">
+                  <p className="text-lg text-foreground">
                     {displayedText}
                     <span className="animate-pulse">|</span>
                   </p>

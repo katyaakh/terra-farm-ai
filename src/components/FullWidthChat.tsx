@@ -28,6 +28,24 @@ const FullWidthChat = ({
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState(false);
+
+  const playSound = (frequency: number) => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  };
   const handleSendMessage = async () => {
     if (!userInput.trim() || isLoading) return;
     const userMessage = userInput;
@@ -130,19 +148,42 @@ const FullWidthChat = ({
         {/* Farm Actions */}
         <div className="p-2 bg-background border-t border-border">
           <div className="grid grid-cols-4 gap-2">
-            <button onClick={onWaterCrop} className="flex flex-col items-center gap-1 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all">
+            <button 
+              onClick={() => {
+                playSound(523);
+                onWaterCrop?.();
+              }} 
+              className="flex flex-col items-center gap-1 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all active:scale-95 active:animate-scale-in"
+            >
               <Droplet size={20} />
               <span className="text-xs font-medium">Water</span>
             </button>
-            <button onClick={onApplyFertilizer} className="flex flex-col items-center gap-1 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all">
+            <button 
+              onClick={() => {
+                playSound(659);
+                onApplyFertilizer?.();
+              }} 
+              className="flex flex-col items-center gap-1 p-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all active:scale-95 active:animate-scale-in"
+            >
               <Sprout size={20} />
               <span className="text-xs font-medium">Fertilize</span>
             </button>
-            <button onClick={() => setIsChatExpanded(!isChatExpanded)} className="flex flex-col items-center gap-1 p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all">
+            <button 
+              onClick={() => {
+                playSound(784);
+                setIsChatExpanded(!isChatExpanded);
+              }} 
+              className="flex flex-col items-center gap-1 p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all active:scale-95 active:animate-scale-in"
+            >
               <MessageCircle size={20} />
               <span className="text-xs font-medium">Talk with Terra</span>
             </button>
-            <button onClick={() => {}} className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all">
+            <button 
+              onClick={() => {
+                playSound(440);
+              }} 
+              className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all active:scale-95 active:animate-scale-in"
+            >
               <EyeOff size={20} />
               <span className="text-xs font-medium">Monitor, do nothing</span>
             </button>

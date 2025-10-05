@@ -132,6 +132,28 @@ const Index = () => {
               </div>
             </div>
 
+            {/* NASA Data Info */}
+            <div className="bg-gradient-to-r from-blue-50 via-green-50 to-blue-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg mb-6">
+              <h4 className="font-bold text-gray-800 text-center mb-4 flex items-center justify-center gap-2">
+                <span className="text-2xl">🛰️</span>
+                <span>NASA Earth Observation Missions</span>
+              </h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-blue-600 mb-2 text-center">SMAP</h5>
+                  <p className="text-xs text-gray-600 text-center">Soil Moisture Active Passive - Monitors soil moisture globally</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-green-600 mb-2 text-center">MODIS</h5>
+                  <p className="text-xs text-gray-600 text-center">Vegetation health & NDVI measurements</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                  <h5 className="font-bold text-sky-600 mb-2 text-center">GPM</h5>
+                  <p className="text-xs text-gray-600 text-center">Global Precipitation Measurement - Rainfall data</p>
+                </div>
+              </div>
+            </div>
+
             {/* Mode Selection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <button
@@ -203,27 +225,6 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* NASA Data Info */}
-            <div className="bg-gradient-to-r from-blue-50 via-green-50 to-blue-50 rounded-2xl p-6 border-2 border-blue-200 shadow-lg">
-              <h4 className="font-bold text-gray-800 text-center mb-4 flex items-center justify-center gap-2">
-                <span className="text-2xl">🛰️</span>
-                <span>NASA Earth Observation Missions</span>
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
-                  <h5 className="font-bold text-blue-600 mb-2 text-center">SMAP</h5>
-                  <p className="text-xs text-gray-600 text-center">Soil Moisture Active Passive - Monitors soil moisture globally</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
-                  <h5 className="font-bold text-green-600 mb-2 text-center">MODIS</h5>
-                  <p className="text-xs text-gray-600 text-center">Vegetation health & NDVI measurements</p>
-                </div>
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
-                  <h5 className="font-bold text-sky-600 mb-2 text-center">GPM</h5>
-                  <p className="text-xs text-gray-600 text-center">Global Precipitation Measurement - Rainfall data</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

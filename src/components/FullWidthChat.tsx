@@ -3,6 +3,7 @@ import { AgentMessage } from '@/types/game';
 import { useState } from 'react';
 import TerranautAvatar from './TerranautAvatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import astroAvatar from '@/assets/astro.jpeg';
 interface FullWidthChatProps {
   agentMessages: AgentMessage[];
   mode: string | null;
@@ -131,7 +132,7 @@ const FullWidthChat = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary">
-              <img src="astro.jpg" alt="AstroNaut">
+              <img src={astroAvatar} alt="AstroNaut" className="w-full h-full object-cover" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Terra AI Assistant</h2>

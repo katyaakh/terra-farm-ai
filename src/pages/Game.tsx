@@ -46,6 +46,7 @@ const Game = () => {
   const [dataCheckAttempts, setDataCheckAttempts] = useState(0);
   const { toast } = useToast();
   const [showNasaInfo, setShowNasaInfo] = useState(false);
+  const [isLogExpanded, setIsLogExpanded] = useState(false);
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -733,10 +734,13 @@ const Game = () => {
 
         {/* Activity Log Compact */}
         <div className="mt-4 w-full max-w-sm">
-          <div className="bg-card/95 backdrop-blur rounded-lg p-2">
-            <h3 className="font-bold text-xs mb-2 text-muted-foreground">Recent Activity</h3>
-            <div className="space-y-1 max-h-20 overflow-y-auto">
-              {activityLog.slice(-3).reverse().map((log, idx) => (
+          <div 
+            className="bg-card/95 backdrop-blur rounded-lg p-2 cursor-pointer hover:bg-card transition-colors"
+            onClick={() => setIsLogExpanded(!isLogExpanded)}
+          >
+            <h3 className="font-bold text-xs mb-2 text-muted-foreground">Recent Activity {isLogExpanded ? '▼' : '▶'}</h3>
+            <div className={`space-y-1 ${isLogExpanded ? 'max-h-60 overflow-y-auto' : 'max-h-auto'}`}>
+              {(isLogExpanded ? activityLog.slice().reverse() : activityLog.slice(-1)).map((log, idx) => (
                 <div key={idx} className={`text-xs p-1.5 rounded ${
                   log.type === 'success' ? 'bg-primary/10 text-primary' :
                   log.type === 'warning' ? 'bg-accent/10 text-accent' :

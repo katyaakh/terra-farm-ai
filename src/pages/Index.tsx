@@ -6,6 +6,7 @@ import AgentChat from '@/components/AgentChat';
 import { AgentMessage } from '@/types/game';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import terraAvatar from '@/assets/terra-avatar.mp4';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -13,6 +14,9 @@ const Index = () => {
   const [hoveredMode, setHoveredMode] = useState<string | null>(null);
   const [showAgent, setShowAgent] = useState(true);
   const [agentMessages, setAgentMessages] = useState<AgentMessage[]>([]);
+  const [displayedText, setDisplayedText] = useState('');
+  
+  const greetingMessage = "Choose your path below - learn with simulations or monitor your real farm!";
 
   // Skip auth requirement - commented out
   // useEffect(() => {
@@ -26,7 +30,18 @@ const Index = () => {
   };
 
   useEffect(() => {
-   }, []);
+    let index = 0;
+    const typingInterval = setInterval(() => {
+      if (index < greetingMessage.length) {
+        setDisplayedText(greetingMessage.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 30);
+    
+    return () => clearInterval(typingInterval);
+  }, []);
 
   const handleModeSelect = (mode: 'simulation' | 'monitoring') => {
     navigate('/setup', { state: { mode } });
@@ -152,6 +167,28 @@ const Index = () => {
                   )}
                 </div>
               </button>
+            </div>
+
+            {/* Avatar and Greeting */}
+            <div className="mb-6 bg-card/50 backdrop-blur rounded-2xl p-6 border border-primary/20">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-32 h-32 flex-shrink-0">
+                  <video 
+                    src={terraAvatar} 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-lg text-foreground">
+                    {displayedText}
+                    <span className="animate-pulse">|</span>
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Quick Access to Real Monitoring */}

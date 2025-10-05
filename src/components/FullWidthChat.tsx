@@ -13,6 +13,7 @@ interface FullWidthChatProps {
   onAddMessage?: (message: AgentMessage) => void;
   onWaterCrop?: () => void;
   onApplyFertilizer?: () => void;
+  onMonitor?: () => void;
   onCheckMarket?: () => void;
   onViewLogs?: () => void;
 }
@@ -23,6 +24,7 @@ const FullWidthChat = ({
   onAddMessage,
   onWaterCrop,
   onApplyFertilizer,
+  onMonitor,
   onCheckMarket,
   onViewLogs
 }: FullWidthChatProps) => {
@@ -239,11 +241,12 @@ const FullWidthChat = ({
           <button 
             onClick={() => {
               playSound(440);
+              onMonitor?.();
             }} 
             className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all active:scale-95 active:animate-scale-in"
           >
             <EyeOff size={20} />
-            <span className="text-xs font-medium">Monitor, do nothing</span>
+            <span className="text-xs font-medium">Monitor</span>
           </button>
         </div>
       </div>

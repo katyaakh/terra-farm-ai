@@ -772,6 +772,7 @@ const Game = () => {
         onAddMessage={(msg) => setAgentMessages(prev => [...prev, msg])}
         onWaterCrop={() => handleAction('irrigate')}
         onApplyFertilizer={() => handleAction('fertilize')}
+        onMonitor={() => handleAction('monitor')}
         onCheckMarket={() => handleAction('monitor')}
         onViewLogs={() => {
           console.log('Activity logs:', activityLog);

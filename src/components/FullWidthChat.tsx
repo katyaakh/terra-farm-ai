@@ -243,9 +243,9 @@ const FullWidthChat = ({
               playSound(440);
               onMonitor?.();
             }} 
-            className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all active:scale-95 active:animate-scale-in"
+            className="flex flex-col items-center gap-1 p-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 animate-fade-in hover:shadow-lg"
           >
-            <EyeOff size={20} />
+            <EyeOff size={20} className="transition-transform duration-200 group-hover:rotate-12" />
             <span className="text-xs font-medium">Monitor</span>
           </button>
         </div>

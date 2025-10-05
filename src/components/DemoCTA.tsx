@@ -36,13 +36,6 @@ const DemoCTA = () => {
               Try Demo Now
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="bg-white/10 text-white border-white/30 hover:bg-white/20 text-lg px-8 py-6"
-            >
-              Watch Tutorial
-            </Button>
           </div>
 
           <p className="text-sm text-white/70 pt-4">

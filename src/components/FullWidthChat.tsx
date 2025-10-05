@@ -1,4 +1,4 @@
-import { Send, Sprout, Droplet, TrendingUp, FileText } from 'lucide-react';
+import { Send, Sprout, Droplet, MessageCircle, FileText } from 'lucide-react';
 import { AgentMessage } from '@/types/game';
 import { useState } from 'react';
 import TerranautAvatar from './TerranautAvatar';
@@ -27,6 +27,7 @@ const FullWidthChat = ({
 }: FullWidthChatProps) => {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
   const handleSendMessage = async () => {
     if (!userInput.trim() || isLoading) return;
     const userMessage = userInput;
@@ -102,29 +103,29 @@ const FullWidthChat = ({
       setIsLoading(false);
     }
   };
-  return <div className="fixed bottom-0 left-0 right-0 w-full h-[40vh] md:h-[30vh] bg-card border-t border-border shadow-2xl z-50">
+  return <div className={`fixed bottom-0 left-0 right-0 w-full bg-card border-t border-border shadow-2xl z-50 transition-all duration-300 ${isChatExpanded ? 'h-[40vh] md:h-[30vh]' : 'h-auto'}`}>
       <div className="h-full flex flex-col">
         {/* Chat Header with Avatar */}
         
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-3 bg-muted/30">
+        {/* Messages Area - Only show when expanded */}
+        {isChatExpanded && <div className="flex-1 overflow-y-auto p-3 bg-muted/30">
           <div className="flex flex-wrap gap-2 pb-2">
             {agentMessages.slice(-5).map((msg, idx) => <div key={idx} className={`flex-shrink-0 max-w-xs p-2 rounded-lg text-xs ${msg.type === 'error' ? 'bg-destructive/10 text-destructive border border-destructive/20' : msg.type === 'warning' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' : msg.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
                 {msg.text}
               </div>)}
           </div>
-        </div>
+        </div>}
 
-        {/* Input Area */}
-        <div className="p-2 bg-background border-t border-border">
+        {/* Input Area - Only show when expanded */}
+        {isChatExpanded && <div className="p-2 bg-background border-t border-border">
           <div className="flex gap-2">
             <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSendMessage()} placeholder="Ask Terra AI anything..." disabled={isLoading} className="flex-1 px-3 py-2 text-sm border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background" />
             <button onClick={handleSendMessage} disabled={isLoading || !userInput.trim()} className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all">
               <Send size={16} />
             </button>
           </div>
-        </div>
+        </div>}
 
         {/* Farm Actions */}
         <div className="p-2 bg-background border-t border-border">
@@ -137,13 +138,9 @@ const FullWidthChat = ({
               <Sprout size={20} />
               <span className="text-xs font-medium">Fertilize</span>
             </button>
-            <button onClick={onCheckMarket} className="flex flex-col items-center gap-1 p-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all">
-              <TrendingUp size={20} />
-              <span className="text-xs font-medium">Market</span>
-            </button>
-            <button onClick={onViewLogs} className="flex flex-col items-center gap-1 p-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all">
-              <FileText size={20} />
-              <span className="text-xs font-medium">Logs</span>
+            <button onClick={() => setIsChatExpanded(!isChatExpanded)} className="flex flex-col items-center gap-1 p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-all">
+              <MessageCircle size={20} />
+              <span className="text-xs font-medium">Talk with Terra</span>
             </button>
           </div>
         </div>

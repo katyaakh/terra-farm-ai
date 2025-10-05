@@ -621,7 +621,7 @@ const Game = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col p-4 overflow-hidden">
+      <div className="flex-1 flex flex-col p-4 overflow-hidden items-center justify-center bg-gradient-to-br from-white/20 via-white/10 to-transparent">
         {/* Plant Visualization - Smaller */}
         <div className="w-48 h-48 flex items-center justify-center">
           <PlantVisualization 

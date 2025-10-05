@@ -93,7 +93,7 @@ const SetupLocation = () => {
           {/* Avatar and Intro Message */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-center">
             <div className="flex justify-center">
-              <div className="w-64 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-4 flex items-center justify-center border-2 border-primary/20 overflow-hidden">
+              <div className="w-64 h-64 rounded-xl p-4 flex items-center justify-center overflow-hidden">
                 <video 
                   src={terraAvatar} 
                   autoPlay 

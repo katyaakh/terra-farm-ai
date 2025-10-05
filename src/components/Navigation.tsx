@@ -7,7 +7,7 @@ const Navigation = () => {
 
   const menuItems = [
     { label: "About", href: "#about" },
-    { label: "Functionality", href: "#functionality" },
+    { label: "Experience", href: "#functionality" },
     { label: "Try Demo", href: "#demo" },
   ];
 

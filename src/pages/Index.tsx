@@ -110,6 +110,28 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Avatar and Greeting */}
+            <div className="mb-6 bg-card/50 backdrop-blur rounded-2xl p-6 border border-primary/20">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-32 h-32 flex-shrink-0">
+                  <video 
+                    src={terraAvatar} 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline 
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-lg text-foreground">
+                    {displayedText}
+                    <span className="animate-pulse">|</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Mode Selection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <button
@@ -167,28 +189,6 @@ const Index = () => {
                   )}
                 </div>
               </button>
-            </div>
-
-            {/* Avatar and Greeting */}
-            <div className="mb-6 bg-card/50 backdrop-blur rounded-2xl p-6 border border-primary/20">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-32 h-32 flex-shrink-0">
-                  <video 
-                    src={terraAvatar} 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <p className="text-lg text-foreground">
-                    {displayedText}
-                    <span className="animate-pulse">|</span>
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Quick Access to Real Monitoring */}

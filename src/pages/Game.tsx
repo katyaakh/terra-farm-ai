@@ -426,11 +426,11 @@ const Game = () => {
   return (
     <div className="h-screen w-full bg-gradient-to-br from-primary via-secondary to-accent flex flex-col overflow-hidden pb-[40vh] md:pb-[30vh]">{/* Added padding for chat */}
       {/* Fixed Header */}
-      <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
+      <div className="bg-gradient-to-r from-primary via-green-600 to-accent px-3 py-2 border-b border-white/20">
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold text-card-foreground truncate">{state.farmName}</h1>
-            <p className="text-xs text-muted-foreground truncate">{state.location.name}</p>
+            <h1 className="text-sm font-bold text-primary-foreground truncate">{state.farmName}</h1>
+            <p className="text-xs text-primary-foreground/80 truncate">{state.location.name}</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-primary">Day {currentDay}</p>

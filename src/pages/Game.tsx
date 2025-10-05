@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Crop, Location, AgentMessage, PlantHealth, GameLog } from '@/types/game';
 import PlantVisualization from '@/components/PlantVisualization';
 import FullWidthChat from '@/components/FullWidthChat';
-import { Droplet, Leaf, Zap, Upload, Satellite } from 'lucide-react';
+import { Droplet, Leaf, Zap, Upload, Satellite, Info, TrendingUp, Thermometer } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ const Game = () => {
   const [isGeneratingSynthetic, setIsGeneratingSynthetic] = useState(false);
   const [dataCheckAttempts, setDataCheckAttempts] = useState(0);
   const { toast } = useToast();
+  const [showNasaInfo, setShowNasaInfo] = useState(false);
 
   // Fetch historical weather and satellite data on component mount
   useEffect(() => {
@@ -480,60 +481,141 @@ const Game = () => {
         </div>
       )}
 
-      {/* Data Stats - Top */}
-      <div className="bg-card/95 backdrop-blur px-3 py-2 border-b">
-        <div className="grid grid-cols-2 gap-2">
-          {/* NASA Data */}
-          <div className="space-y-1.5">
-            <div>
-              <div className="flex justify-between text-xs mb-0.5">
-                <span className="text-muted-foreground">Soil 💧</span>
-                <span className="font-bold">{soilMoisture.toFixed(0)}%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-1">
-                <div 
-                  className={`h-1 rounded-full transition-all ${soilMoisture > 60 ? 'bg-accent' : soilMoisture > 30 ? 'bg-primary' : 'bg-destructive'}`}
-                  style={{ width: `${soilMoisture}%` }}
-                ></div>
-              </div>
+      {/* Main Indicators */}
+      <div className="bg-white/95 backdrop-blur px-3 py-3 border-b">
+        <div className="grid grid-cols-4 gap-3">
+          {/* Budget Card */}
+          <div className="bg-white rounded-lg p-3 shadow-md border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              <span className="text-xs text-gray-600">Budget</span>
             </div>
-            <div>
-              <div className="flex justify-between text-xs mb-0.5">
-                <span className="text-muted-foreground">NDVI 🌿</span>
-                <span className="font-bold">{ndvi.toFixed(2)}</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-1">
-                <div 
-                  className={`h-1 rounded-full transition-all ${ndvi > 0.7 ? 'bg-primary' : ndvi > 0.5 ? 'bg-accent' : 'bg-destructive'}`}
-                  style={{ width: `${ndvi * 100}%` }}
-                ></div>
-              </div>
-            </div>
+            <p className={`text-xl font-bold ${budget > 5000 ? 'text-green-600' : 'text-red-600'}`}>
+              €{budget.toLocaleString()}
+            </p>
           </div>
 
-          {/* Farm Metrics */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Budget</span>
-              <span className={`text-xs font-bold ${budget > 5000 ? 'text-primary' : 'text-destructive'}`}>
-                €{budget.toLocaleString()}
-              </span>
+          {/* Water Reserve Card */}
+          <div className="bg-white rounded-lg p-3 shadow-md border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Droplet className="w-4 h-4 text-blue-600" />
+              <span className="text-xs text-gray-600">Water Reserve</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Quality</span>
-              <span className="text-xs font-bold">{calculateQuality()}%</span>
+            <p className="text-xl font-bold text-blue-600">{waterReserve}%</p>
+          </div>
+
+          {/* Env. Score Card */}
+          <div className="bg-white rounded-lg p-3 shadow-md border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Leaf className="w-4 h-4 text-green-600" />
+              <span className="text-xs text-gray-600">Env. Score</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Temp</span>
-              <span className="text-xs font-bold flex items-center gap-1">
-                {temperature.toFixed(1)}°C
-                {dataSource && (
-                  <span className="text-[10px]">
-                    {dataSource === 'MODIS_REAL' ? '🟢' : '🟡'}
-                  </span>
-                )}
-              </span>
+            <p className="text-xl font-bold text-green-600">{envScore}</p>
+          </div>
+
+          {/* Temperature Card */}
+          <div className="bg-white rounded-lg p-3 shadow-md border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Thermometer className="w-4 h-4 text-orange-600" />
+              <span className="text-xs text-gray-600">Temperature</span>
             </div>
+            <p className="text-xl font-bold text-orange-600">
+              {temperature.toFixed(1)}°C
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* NASA Satellite Data */}
+      <div className="bg-white/95 backdrop-blur px-3 py-3 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-gray-800">NASA Satellite Data</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowNasaInfo(!showNasaInfo)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <Info className="w-4 h-4 mr-1" />
+            Show Data Info
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {/* SMAP Soil Moisture */}
+          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Droplet className="w-4 h-4 text-blue-600" />
+              <div>
+                <p className="text-xs font-semibold text-blue-700">SMAP SOIL MOISTURE</p>
+                <p className="text-[10px] text-blue-600">Root zone, 9km res, 3-day lag</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <p className="text-2xl font-bold text-gray-800">{soilMoisture.toFixed(0)}%</p>
+              <Badge className={`${soilMoisture < 40 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                {soilMoisture < 40 ? 'Critical' : 'Good'}
+              </Badge>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
+              <div 
+                className="h-1 rounded-full bg-blue-600 transition-all"
+                style={{ width: `${soilMoisture}%` }}
+              ></div>
+            </div>
+            {showNasaInfo && (
+              <p className="text-[10px] text-blue-600 mt-2">Optimal range: 50-70% for most crops</p>
+            )}
+          </div>
+
+          {/* MODIS NDVI */}
+          <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Leaf className="w-4 h-4 text-green-600" />
+              <div>
+                <p className="text-xs font-semibold text-green-700">MODIS NDVI</p>
+                <p className="text-[10px] text-green-600">Vegetation health, 250m res</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <p className="text-2xl font-bold text-gray-800">{ndvi.toFixed(2)}</p>
+              <Badge className={`${ndvi < 0.5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                {ndvi < 0.5 ? 'Moderate' : 'Healthy'}
+              </Badge>
+            </div>
+            <div className="w-full bg-green-200 rounded-full h-1 mt-2">
+              <div 
+                className="h-1 rounded-full bg-green-600 transition-all"
+                style={{ width: `${ndvi * 100}%` }}
+              ></div>
+            </div>
+            {showNasaInfo && (
+              <p className="text-[10px] text-green-600 mt-2">Range: 0 (bare soil) to 0.85 (dense vegetation)</p>
+            )}
+          </div>
+
+          {/* GPM Precipitation */}
+          <div className="bg-sky-50 rounded-lg p-3 border border-sky-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Droplet className="w-4 h-4 text-sky-600" />
+              <div>
+                <p className="text-xs font-semibold text-sky-700">GPM PRECIPITATION</p>
+                <p className="text-[10px] text-sky-600">Recent rainfall, 10km res</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <p className="text-2xl font-bold text-gray-800">0mm</p>
+              <Badge className="bg-gray-100 text-gray-700">No Rain</Badge>
+            </div>
+            <div className="w-full bg-sky-200 rounded-full h-1 mt-2">
+              <div 
+                className="h-1 rounded-full bg-sky-600 transition-all"
+                style={{ width: '0%' }}
+              ></div>
+            </div>
+            {showNasaInfo && (
+              <p className="text-[10px] text-sky-600 mt-2">Last 24 hours, updated every 30 min</p>
+            )}
           </div>
         </div>
       </div>

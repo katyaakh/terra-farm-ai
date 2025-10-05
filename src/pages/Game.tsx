@@ -520,7 +520,7 @@ const Game = () => {
                 <p className="text-[10px] text-blue-600">Root zone, 9km res, 3-day lag</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-end justify-between">
+            <div className="flex items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">{soilMoisture.toFixed(0)}%</p>
               <Badge className={`${soilMoisture < 40 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                 {soilMoisture < 40 ? 'Critical' : 'Good'}
@@ -536,14 +536,14 @@ const Game = () => {
 
           {/* MODIS NDVI */}
           <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <Leaf className="w-4 h-4 text-green-600" />
               <div>
                 <p className="text-xs font-semibold text-green-700">MODIS NDVI</p>
                 <p className="text-[10px] text-green-600">Vegetation health, 250m res</p>
               </div>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="flex flex-wrap items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">{ndvi.toFixed(2)}</p>
               <Badge className={`${ndvi < 0.5 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                 {ndvi < 0.5 ? 'Moderate' : 'Healthy'}
@@ -566,7 +566,7 @@ const Game = () => {
                 <p className="text-[10px] text-sky-600">Recent rainfall, 10km res</p>
               </div>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="flex flex-wrap items-end justify-between">
               <p className="text-2xl font-bold text-gray-800">0mm</p>
               <Badge className="bg-gray-100 text-gray-700">No Rain</Badge>
             </div>

@@ -14,38 +14,40 @@ interface StoreSatelliteRequest {
   end_date: string;
 }
 
-// Generate mock satellite data for each day in the range
+// Generate synthetic satellite data for each day in the range
+// Base values: NDVI=0.4656, Temp=21°C, Soil Moisture=0.516682
+// Each day varies by ±10% randomly
 function generateSatelliteDataForPeriod(startDate: string, endDate: string) {
   const data = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
   
+  // Base values as specified
+  const baseNdvi = 0.4656;
+  const baseTempCelsius = 21;
+  const baseTempKelvin = baseTempCelsius + 273.15; // 294.15K
+  const baseSoilMoisture = 0.516682;
+  
   // Iterate through each day
   for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
     const dateStr = date.toISOString().split('T')[0];
     
-    // Generate realistic satellite data
-    // NDVI: Normalized Difference Vegetation Index (0-1, healthy vegetation ~0.6-0.9)
-    const baseNdvi = 0.65;
-    const ndviVariation = (Math.random() - 0.5) * 0.15; // ±0.075
-    const ndvi = Math.max(0.3, Math.min(0.95, baseNdvi + ndviVariation));
+    // Apply ±10% random variation for each parameter
+    const ndviVariation = (Math.random() - 0.5) * 0.2; // ±10% = ±0.1 relative
+    const ndvi = baseNdvi * (1 + ndviVariation);
     
-    // LST: Land Surface Temperature in Kelvin (typical range 280-320K for temperate climates)
-    const baseLst = 295; // ~22°C
-    const lstVariation = (Math.random() - 0.5) * 20; // ±10K
-    const lst = baseLst + lstVariation;
+    const lstVariation = (Math.random() - 0.5) * 0.2; // ±10%
+    const lst = baseTempKelvin * (1 + lstVariation);
     
-    // Soil Moisture: volumetric water content (0-1, typical agricultural range 0.2-0.5)
-    const baseSoilMoisture = 0.35;
-    const moistureVariation = (Math.random() - 0.5) * 0.2; // ±0.1
-    const soilMoisture = Math.max(0.1, Math.min(0.6, baseSoilMoisture + moistureVariation));
+    const moistureVariation = (Math.random() - 0.5) * 0.2; // ±10%
+    const soilMoisture = baseSoilMoisture * (1 + moistureVariation);
     
     data.push({
       date: dateStr,
-      ndvi: Number(ndvi.toFixed(3)),
+      ndvi: Number(ndvi.toFixed(4)),
       lst_kelvin: Number(lst.toFixed(2)),
       lst_celsius: Number((lst - 273.15).toFixed(2)),
-      soil_moisture: Number(soilMoisture.toFixed(3)),
+      soil_moisture: Number(soilMoisture.toFixed(6)),
       data_source: 'MODIS_SIMULATED'
     });
   }

@@ -6,9 +6,9 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
-    { label: "About", href: "#about" },
-    { label: "Experience", href: "#functionality" },
-    { label: "Try Demo", href: "#demo" },
+    { label: "About", href: "#functionality" },
+    { label: "Experience", href: "#experience" },
+    { label: "Try Demo", href: "/dashboard", isRoute: true },
   ];
 
   return (
@@ -16,7 +16,15 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="text-3xl font-bold text-foreground font-manrope">
+          <a 
+            href="#hero" 
+            className="text-3xl font-bold text-foreground font-manrope cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              const element = document.querySelector('#hero');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             Terranaut
           </a>
 
@@ -28,9 +36,11 @@ const Navigation = () => {
                 href={item.href}
                 className="text-foreground/80 hover:text-foreground transition-colors"
                 onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.querySelector(item.href);
-                  element?.scrollIntoView({ behavior: 'smooth' });
+                  if (!item.isRoute) {
+                    e.preventDefault();
+                    const element = document.querySelector(item.href);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }
                 }}
               >
                 {item.label}
@@ -58,10 +68,12 @@ const Navigation = () => {
                 href={item.href}
                 className="block py-2 text-foreground/80 hover:text-foreground transition-colors"
                 onClick={(e) => {
-                  e.preventDefault();
                   setIsMenuOpen(false);
-                  const element = document.querySelector(item.href);
-                  element?.scrollIntoView({ behavior: 'smooth' });
+                  if (!item.isRoute) {
+                    e.preventDefault();
+                    const element = document.querySelector(item.href);
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }
                 }}
               >
                 {item.label}

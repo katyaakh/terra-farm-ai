@@ -2,7 +2,7 @@ import { MessageSquare } from "lucide-react";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-cosmic">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-cosmic">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden bg-gradient-to-br from-primary via-secondary to-accent">
         <div className="absolute top-20 left-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-float" />

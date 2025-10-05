@@ -11,7 +11,7 @@ export const locations: Location[] = [
 export const crops: Crop[] = [
   { 
     id: 'tomatoes', 
-    name: 'Tomatoes (La Garriga)', 
+    name: 'Tomatoes', 
     waterNeed: 'Medium-High', 
     droughtTolerance: 'Medium', 
     profit: 4000, 

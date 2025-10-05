@@ -357,6 +357,70 @@ async function fetchSMAP(
   }
 }
 
+// Generate synthetic satellite data as final fallback
+// Base values: NDVI=0.4656, Temp=21°C, Soil Moisture=0.516682
+// Each day varies by ±10% randomly
+function generateSyntheticData(startDate: string): any {
+  console.log('🔬 Generating synthetic satellite data');
+  
+  // Base values as specified
+  const baseNdvi = 0.4656;
+  const baseTempCelsius = 21;
+  const baseTempKelvin = baseTempCelsius + 273.15; // 294.15K
+  const baseSoilMoisture = 0.516682;
+  
+  // Apply ±10% random variation
+  const ndviVariation = (Math.random() - 0.5) * 0.2; // ±10%
+  const ndvi = baseNdvi * (1 + ndviVariation);
+  
+  const lstVariation = (Math.random() - 0.5) * 0.2; // ±10%
+  const lstKelvin = baseTempKelvin * (1 + lstVariation);
+  
+  const moistureVariation = (Math.random() - 0.5) * 0.2; // ±10%
+  const soilMoisture = baseSoilMoisture * (1 + moistureVariation);
+  
+  return {
+    ndvi: {
+      dataset: 'SYNTHETIC',
+      values: [{
+        date: startDate,
+        value: Number(ndvi.toFixed(4)),
+        age_days: 0,
+        is_simulated: true
+      }],
+      scale: 1,
+      unit: 'NDVI',
+      data_source: 'SYNTHETIC',
+      note: 'Using synthetic data (base: NDVI=0.4656 ±10%)'
+    },
+    lst: {
+      dataset: 'SYNTHETIC',
+      values: [{
+        date: startDate,
+        value: Number(lstKelvin.toFixed(2)),
+        age_days: 0,
+        is_simulated: true
+      }],
+      conversion: '°C = LST - 273.15',
+      unit: 'K',
+      data_source: 'SYNTHETIC',
+      note: `Using synthetic data (base: ${baseTempCelsius}°C ±10%)`
+    },
+    smap: {
+      dataset: 'SYNTHETIC',
+      values: [{
+        date: startDate,
+        value: Number(soilMoisture.toFixed(6)),
+        age_days: 0,
+        is_simulated: true
+      }],
+      unit: 'm³/m³',
+      data_source: 'SYNTHETIC',
+      note: 'Using synthetic data (base: 0.516682 m³/m³ ±10%)'
+    }
+  };
+}
+
 // Fetch last recorded data from database for this location
 async function getLastRecordedData(lat: number, lon: number, supabaseUrl: string, supabaseKey: string) {
   console.log('🔍 Looking for last recorded data for this location...');
@@ -467,7 +531,7 @@ serve(async (req) => {
     const privateKey = Deno.env.get('GEE_PRIVATE_KEY');
 
     if (!serviceAccountEmail || !privateKey) {
-      console.warn('⚠️ GEE credentials not configured, using last recorded data');
+      console.warn('⚠️ GEE credentials not configured, trying last recorded data');
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
       const lastRecordedData = await getLastRecordedData(body.lat, body.lon, supabaseUrl, supabaseKey);
@@ -477,8 +541,12 @@ serve(async (req) => {
         if (body.datasets.includes('lst')) results.datasets.lst = lastRecordedData.lst;
         if (body.datasets.includes('smap')) results.datasets.smap = lastRecordedData.smap;
       } else {
-        console.warn('⚠️ No last recorded data available');
-        results.datasets = { error: 'No satellite data available for this location' };
+        // Use synthetic data as final fallback
+        console.warn('⚠️ No last recorded data available, using synthetic data');
+        const syntheticData = generateSyntheticData(body.start_date);
+        if (body.datasets.includes('ndvi')) results.datasets.ndvi = syntheticData.ndvi;
+        if (body.datasets.includes('lst')) results.datasets.lst = syntheticData.lst;
+        if (body.datasets.includes('smap')) results.datasets.smap = syntheticData.smap;
       }
       
       return new Response(JSON.stringify(results), {
@@ -507,8 +575,13 @@ serve(async (req) => {
             results.datasets.ndvi = lastRecordedFallback?.ndvi || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('NDVI fetch failed, using last recorded data:', error);
-          results.datasets.ndvi = lastRecordedFallback?.ndvi || { error: 'No data available' };
+          console.error('NDVI fetch failed, using fallback:', error);
+          if (lastRecordedFallback?.ndvi) {
+            results.datasets.ndvi = lastRecordedFallback.ndvi;
+          } else {
+            const syntheticData = generateSyntheticData(body.start_date);
+            results.datasets.ndvi = syntheticData.ndvi;
+          }
         }
       }
       
@@ -531,8 +604,13 @@ serve(async (req) => {
             results.datasets.lst = lastRecordedFallback?.lst || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('LST fetch failed, using last recorded data:', error);
-          results.datasets.lst = lastRecordedFallback?.lst || { error: 'No data available' };
+          console.error('LST fetch failed, using fallback:', error);
+          if (lastRecordedFallback?.lst) {
+            results.datasets.lst = lastRecordedFallback.lst;
+          } else {
+            const syntheticData = generateSyntheticData(body.start_date);
+            results.datasets.lst = syntheticData.lst;
+          }
         }
       }
       
@@ -547,15 +625,20 @@ serve(async (req) => {
             results.datasets.smap = lastRecordedFallback?.smap || { error: 'No data available' };
           }
         } catch (error) {
-          console.error('SMAP fetch failed, using last recorded data:', error);
-          results.datasets.smap = lastRecordedFallback?.smap || { error: 'No data available' };
+          console.error('SMAP fetch failed, using fallback:', error);
+          if (lastRecordedFallback?.smap) {
+            results.datasets.smap = lastRecordedFallback.smap;
+          } else {
+            const syntheticData = generateSyntheticData(body.start_date);
+            results.datasets.smap = syntheticData.smap;
+          }
         }
       }
 
       console.log('✅ Satellite data fetch complete');
 
     } catch (geeError) {
-      console.error('GEE authentication/fetch failed, using last recorded data:', geeError);
+      console.error('GEE authentication/fetch failed, trying fallback:', geeError);
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
       const lastRecordedData = await getLastRecordedData(body.lat, body.lon, supabaseUrl, supabaseKey);
@@ -565,8 +648,12 @@ serve(async (req) => {
         if (body.datasets.includes('lst')) results.datasets.lst = lastRecordedData.lst;
         if (body.datasets.includes('smap')) results.datasets.smap = lastRecordedData.smap;
       } else {
-        console.warn('⚠️ No last recorded data available');
-        results.datasets = { error: 'No satellite data available' };
+        // Use synthetic data as final fallback
+        console.warn('⚠️ No last recorded data available, using synthetic data');
+        const syntheticData = generateSyntheticData(body.start_date);
+        if (body.datasets.includes('ndvi')) results.datasets.ndvi = syntheticData.ndvi;
+        if (body.datasets.includes('lst')) results.datasets.lst = syntheticData.lst;
+        if (body.datasets.includes('smap')) results.datasets.smap = syntheticData.smap;
       }
     }
 

@@ -197,7 +197,7 @@ const Setup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-900 via-yellow-800 to-amber-700 p-4 flex items-center overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-accent p-4 flex items-center overflow-y-auto">
       <div className="max-w-5xl mx-auto w-full">
         <div className="bg-card rounded-xl shadow-2xl p-6 animate-scale-in">
           <h2 className="text-2xl font-bold text-card-foreground mb-6 text-center flex items-center justify-center gap-2">

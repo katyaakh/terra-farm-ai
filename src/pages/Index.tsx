@@ -94,21 +94,6 @@ const Index = () => {
 
           {/* Content */}
           <div className="p-6">
-            {/* Terranaut Character */}
-            <div style="display:none;" className="flex flex-col items-center mb-8">
-              <TerranautAvatar />
-              
-              {/* Agent Chat - Inline below avatar */}
-              <div className="mt-6">
-                <AgentChat 
-                  showAgent={showAgent}
-                  setShowAgent={setShowAgent}
-                  agentMessages={agentMessages}
-                  mode={null}
-                  screen="welcome"
-                />
-              </div>
-            </div>
 
             {/* Avatar and Greeting */}
             <div className="mb-6 bg-card/50 backdrop-blur rounded-2xl p-6 border border-primary/20">

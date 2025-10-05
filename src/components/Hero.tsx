@@ -54,9 +54,9 @@ const Hero = () => {
             <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
               Terranaut
             </h1>
-            <p className="text-2xl lg:text-3xl text-white/90 font-light">
+            <h2 className="text-2xl lg:text-3xl text-white font-light">
               Smart Farming with NASA Satellite Data
-            </p>
+            </h2>
             <p className="text-lg text-white/80 max-w-xl">
               Empowering precision irrigation, reducing water waste, and optimizing crop yields through advanced satellite technology and AI-powered insights.
             </p>

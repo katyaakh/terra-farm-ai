@@ -135,25 +135,16 @@ async function getGEEAccessToken(serviceAccountEmail: string, privateKey: string
   return data.access_token;
 }
 
-// Fetch MODIS NDVI from Google Earth Engine - searches last 15 days for most recent data
+// Fetch MODIS NDVI from Google Earth Engine
 async function fetchMODISNDVI(
   accessToken: string,
   geometry: any,
-  targetDate: string
+  startDate: string,
+  endDate: string
 ): Promise<any> {
   console.log('Fetching MODIS NDVI from GEE...');
   
   try {
-    // Search for data in the last 15 days before target date
-    const target = new Date(targetDate);
-    const searchStart = new Date(target);
-    searchStart.setDate(searchStart.getDate() - 15);
-    
-    const startDate = searchStart.toISOString().split('T')[0];
-    const endDate = targetDate;
-    
-    console.log(`Searching NDVI data from ${startDate} to ${endDate}`);
-    
     const response = await fetch('https://earthengine.googleapis.com/v1/projects/earthengine-legacy/value:compute', {
       method: 'POST',
       headers: {
@@ -170,30 +161,21 @@ async function fetchMODISNDVI(
             arguments: {
               collection: {
                 functionInvocationValue: {
-                  functionName: "ImageCollection.sort",
+                  functionName: "ImageCollection.filterDate",
                   arguments: {
                     collection: {
                       functionInvocationValue: {
-                        functionName: "ImageCollection.filterDate",
+                        functionName: "ImageCollection.filterBounds",
                         arguments: {
                           collection: {
-                            functionInvocationValue: {
-                              functionName: "ImageCollection.filterBounds",
-                              arguments: {
-                                collection: {
-                                  constantValue: "MODIS/061/MOD13Q1"
-                                },
-                                geometry: { constantValue: geometry }
-                              }
-                            }
+                            constantValue: "MODIS/061/MOD13Q1"
                           },
-                          start: { constantValue: startDate },
-                          end: { constantValue: endDate }
+                          geometry: { constantValue: geometry }
                         }
                       }
                     },
-                    property: { constantValue: "system:time_start" },
-                    ascending: { constantValue: false }
+                    start: { constantValue: startDate },
+                    end: { constantValue: endDate }
                   }
                 }
               }
@@ -208,56 +190,34 @@ async function fetchMODISNDVI(
     }
 
     const data = await response.json();
+    console.log('✅ MODIS NDVI data received');
     
-    if (data.result?.NDVI) {
-      const ndviValue = data.result.NDVI * 0.0001;
-      const daysDiff = Math.floor((target.getTime() - searchStart.getTime()) / (1000 * 60 * 60 * 24));
-      
-      console.log(`✅ MODIS NDVI data received (${daysDiff} days old)`);
-      
-      return {
-        dataset: 'MODIS/061/MOD13Q1',
-        values: [{
-          date: endDate,
-          value: ndviValue,
-          age_days: daysDiff,
-          is_simulated: false
-        }],
-        scale: 0.0001,
-        unit: 'NDVI',
-        data_source: 'MODIS_REAL'
-      };
-    }
-    
-    console.log('No NDVI data found in date range');
-    return { dataset: 'MODIS/061/MOD13Q1', values: [], data_source: 'MODIS_REAL' };
-    
+    return {
+      dataset: 'MODIS/061/MOD13Q1',
+      values: data.result?.NDVI ? [
+        { date: startDate, value: data.result.NDVI * 0.0001, age_days: 0, is_simulated: false }
+      ] : [],
+      scale: 0.0001,
+      unit: 'NDVI',
+      data_source: 'MODIS_REAL'
+    };
   } catch (error) {
     console.error('Error fetching MODIS NDVI:', error);
     throw error;
   }
 }
 
-// Fetch MODIS LST from Google Earth Engine - searches last 15 days for most recent data
+// Fetch MODIS LST from Google Earth Engine
 async function fetchMODISLST(
   accessToken: string,
   geometry: any,
-  targetDate: string,
+  startDate: string,
+  endDate: string,
   extentMultiplier: number = 1
 ): Promise<any> {
   console.log(`Fetching MODIS LST from GEE (extent multiplier: ${extentMultiplier}x)...`);
   
   try {
-    // Search for data in the last 15 days before target date
-    const target = new Date(targetDate);
-    const searchStart = new Date(target);
-    searchStart.setDate(searchStart.getDate() - 15);
-    
-    const startDate = searchStart.toISOString().split('T')[0];
-    const endDate = targetDate;
-    
-    console.log(`Searching LST data from ${startDate} to ${endDate}`);
-    
     const response = await fetch('https://earthengine.googleapis.com/v1/projects/earthengine-legacy/value:compute', {
       method: 'POST',
       headers: {
@@ -274,30 +234,21 @@ async function fetchMODISLST(
             arguments: {
               collection: {
                 functionInvocationValue: {
-                  functionName: "ImageCollection.sort",
+                  functionName: "ImageCollection.filterDate",
                   arguments: {
                     collection: {
                       functionInvocationValue: {
-                        functionName: "ImageCollection.filterDate",
+                        functionName: "ImageCollection.filterBounds",
                         arguments: {
                           collection: {
-                            functionInvocationValue: {
-                              functionName: "ImageCollection.filterBounds",
-                              arguments: {
-                                collection: {
-                                  constantValue: "MODIS/061/MOD11A2"
-                                },
-                                geometry: { constantValue: geometry }
-                              }
-                            }
+                            constantValue: "MODIS/061/MOD11A2"
                           },
-                          start: { constantValue: startDate },
-                          end: { constantValue: endDate }
+                          geometry: { constantValue: geometry }
                         }
                       }
                     },
-                    property: { constantValue: "system:time_start" },
-                    ascending: { constantValue: false }
+                    start: { constantValue: startDate },
+                    end: { constantValue: endDate }
                   }
                 }
               }
@@ -312,56 +263,39 @@ async function fetchMODISLST(
     }
 
     const data = await response.json();
+    console.log('✅ MODIS LST data received');
     
-    if (data.result?.LST_Day_1km) {
-      const lstValue = data.result.LST_Day_1km * 0.02; // Kelvin
-      const daysDiff = Math.floor((target.getTime() - searchStart.getTime()) / (1000 * 60 * 60 * 24));
-      
-      console.log(`✅ MODIS LST data received (${daysDiff} days old)`);
-      
-      return {
-        dataset: 'MODIS/061/MOD11A2',
-        values: [{
-          date: endDate,
-          value: lstValue,
-          age_days: daysDiff,
+    return {
+      dataset: 'MODIS/061/MOD11A2',
+      values: data.result?.LST_Day_1km ? [
+        { 
+          date: startDate, 
+          value: data.result.LST_Day_1km * 0.02, // Kelvin
+          age_days: 0, 
           is_simulated: false,
           area_multiplier: extentMultiplier
-        }],
-        conversion: '°C = LST * 0.02 - 273.15',
-        unit: 'K',
-        data_source: 'MODIS_REAL'
-      };
-    }
-    
-    console.log('No LST data found in date range');
-    return { dataset: 'MODIS/061/MOD11A2', values: [], data_source: 'MODIS_REAL' };
-    
+        }
+      ] : [],
+      conversion: '°C = LST * 0.02 - 273.15',
+      unit: 'K',
+      data_source: 'MODIS_REAL'
+    };
   } catch (error) {
     console.error('Error fetching MODIS LST:', error);
     throw error;
   }
 }
 
-// Fetch SMAP Soil Moisture from Google Earth Engine - searches last 15 days for most recent data
+// Fetch SMAP Soil Moisture from Google Earth Engine
 async function fetchSMAP(
   accessToken: string,
   geometry: any,
-  targetDate: string
+  startDate: string,
+  endDate: string
 ): Promise<any> {
   console.log('Fetching SMAP soil moisture from GEE...');
   
   try {
-    // Search for data in the last 15 days before target date
-    const target = new Date(targetDate);
-    const searchStart = new Date(target);
-    searchStart.setDate(searchStart.getDate() - 15);
-    
-    const startDate = searchStart.toISOString().split('T')[0];
-    const endDate = targetDate;
-    
-    console.log(`Searching SMAP data from ${startDate} to ${endDate}`);
-    
     const response = await fetch('https://earthengine.googleapis.com/v1/projects/earthengine-legacy/value:compute', {
       method: 'POST',
       headers: {
@@ -378,30 +312,21 @@ async function fetchSMAP(
             arguments: {
               collection: {
                 functionInvocationValue: {
-                  functionName: "ImageCollection.sort",
+                  functionName: "ImageCollection.filterDate",
                   arguments: {
                     collection: {
                       functionInvocationValue: {
-                        functionName: "ImageCollection.filterDate",
+                        functionName: "ImageCollection.filterBounds",
                         arguments: {
                           collection: {
-                            functionInvocationValue: {
-                              functionName: "ImageCollection.filterBounds",
-                              arguments: {
-                                collection: {
-                                  constantValue: "NASA_USDA/HSL/SMAP10KM_soil_moisture"
-                                },
-                                geometry: { constantValue: geometry }
-                              }
-                            }
+                            constantValue: "NASA_USDA/HSL/SMAP10KM_soil_moisture"
                           },
-                          start: { constantValue: startDate },
-                          end: { constantValue: endDate }
+                          geometry: { constantValue: geometry }
                         }
                       }
                     },
-                    property: { constantValue: "system:time_start" },
-                    ascending: { constantValue: false }
+                    start: { constantValue: startDate },
+                    end: { constantValue: endDate }
                   }
                 }
               }
@@ -416,28 +341,16 @@ async function fetchSMAP(
     }
 
     const data = await response.json();
+    console.log('✅ SMAP soil moisture data received');
     
-    if (data.result?.ssm) {
-      const daysDiff = Math.floor((target.getTime() - searchStart.getTime()) / (1000 * 60 * 60 * 24));
-      
-      console.log(`✅ SMAP soil moisture data received (${daysDiff} days old)`);
-      
-      return {
-        dataset: 'NASA_USDA/HSL/SMAP10KM_soil_moisture',
-        values: [{
-          date: endDate,
-          value: data.result.ssm,
-          age_days: daysDiff,
-          is_simulated: false
-        }],
-        unit: 'm³/m³',
-        data_source: 'MODIS_REAL'
-      };
-    }
-    
-    console.log('No SMAP data found in date range');
-    return { dataset: 'NASA_USDA/HSL/SMAP10KM_soil_moisture', values: [], data_source: 'MODIS_REAL' };
-    
+    return {
+      dataset: 'NASA_USDA/HSL/SMAP10KM_soil_moisture',
+      values: data.result?.ssm ? [
+        { date: startDate, value: data.result.ssm, age_days: 0, is_simulated: false }
+      ] : [],
+      unit: 'm³/m³',
+      data_source: 'MODIS_REAL'
+    };
   } catch (error) {
     console.error('Error fetching SMAP:', error);
     throw error;
@@ -584,13 +497,13 @@ serve(async (req) => {
       
       if (body.datasets.includes('ndvi')) {
         try {
-          const ndviData = await fetchMODISNDVI(accessToken, geometry, body.end_date);
+          const ndviData = await fetchMODISNDVI(accessToken, geometry, body.start_date, body.end_date);
           // Check if we got real data
           if (ndviData.values && ndviData.values.length > 0) {
             results.datasets.ndvi = ndviData;
             console.log('✅ Real NDVI data retrieved');
           } else {
-            console.warn('⚠️ No NDVI data in last 15 days, using last recorded data');
+            console.warn('⚠️ No NDVI data for requested date, using last recorded data');
             results.datasets.ndvi = lastRecordedFallback?.ndvi || { error: 'No data available' };
           }
         } catch (error) {
@@ -601,20 +514,20 @@ serve(async (req) => {
       
       if (body.datasets.includes('lst')) {
         try {
-          let lstData = await fetchMODISLST(accessToken, geometry, body.end_date, 1);
+          let lstData = await fetchMODISLST(accessToken, geometry, body.start_date, body.end_date, 1);
           
           // If LST data is empty (field too small), retry with 2x area
           if (!lstData.values || lstData.values.length === 0) {
             console.log('⚠️ LST data empty (field too small), retrying with 2x area...');
             const expandedGeometry = createSquareGeometry(body.lat, body.lon, body.extent_m * 2);
-            lstData = await fetchMODISLST(accessToken, expandedGeometry, body.end_date, 2);
+            lstData = await fetchMODISLST(accessToken, expandedGeometry, body.start_date, body.end_date, 2);
           }
           
           if (lstData.values && lstData.values.length > 0) {
             results.datasets.lst = lstData;
             console.log('✅ Real LST data retrieved');
           } else {
-            console.warn('⚠️ No LST data in last 15 days, using last recorded data');
+            console.warn('⚠️ No LST data for requested date, using last recorded data');
             results.datasets.lst = lastRecordedFallback?.lst || { error: 'No data available' };
           }
         } catch (error) {
@@ -625,12 +538,12 @@ serve(async (req) => {
       
       if (body.datasets.includes('smap')) {
         try {
-          const smapData = await fetchSMAP(accessToken, geometry, body.end_date);
+          const smapData = await fetchSMAP(accessToken, geometry, body.start_date, body.end_date);
           if (smapData.values && smapData.values.length > 0) {
             results.datasets.smap = smapData;
             console.log('✅ Real SMAP data retrieved');
           } else {
-            console.warn('⚠️ No SMAP data in last 15 days, using last recorded data');
+            console.warn('⚠️ No SMAP data for requested date, using last recorded data');
             results.datasets.smap = lastRecordedFallback?.smap || { error: 'No data available' };
           }
         } catch (error) {

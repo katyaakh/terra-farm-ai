@@ -42,7 +42,7 @@ const features = [
 
 const Features = () => {
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section id="functionality" className="py-24 bg-background relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
       
       <div className="container mx-auto px-4 relative z-10">

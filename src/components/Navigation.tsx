@@ -27,6 +27,11 @@ const Navigation = () => {
                 key={item.label}
                 href={item.href}
                 className="text-foreground/80 hover:text-foreground transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.querySelector(item.href);
+                  element?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 {item.label}
               </a>
@@ -52,7 +57,12 @@ const Navigation = () => {
                 key={item.label}
                 href={item.href}
                 className="block py-2 text-foreground/80 hover:text-foreground transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMenuOpen(false);
+                  const element = document.querySelector(item.href);
+                  element?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 {item.label}
               </a>

@@ -562,8 +562,8 @@ const Game = () => {
             <div className="flex items-center gap-2 mb-2">
               <Droplet className="w-4 h-4 text-sky-600" />
               <div>
-                <p className="text-xs font-semibold text-sky-700">GPM PRECIPITATION</p>
-                <p className="text-[10px] text-sky-600">Recent rainfall, 10km res</p>
+                <p className="text-sky-700 text-xs font-semibold">GPM PRECIPITATION</p>
+                <p className="text-sky-600 text-[[10px]]">Recent rainfall, 10km res</p>
               </div>
             </div>
             <div className="flex items-end justify-between">

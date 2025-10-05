@@ -9,7 +9,7 @@ import { Plus, Droplet, TrendingUp, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import TerranautAvatar from '@/components/TerranautAvatar';
+import terraAvatar from '@/assets/terra-avatar.mp4';
 
 interface Farm {
   id: string;
@@ -45,6 +45,23 @@ const Setup = () => {
   
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [harvestDate, setHarvestDate] = useState('');
+  
+  const setupMessage = "Let's add the crop you want to grow and choose the period - pay attention that's based on the past data!";
+  const [displayedText, setDisplayedText] = useState('');
+  
+  useEffect(() => {
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= setupMessage.length) {
+        setDisplayedText(setupMessage.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 30);
+    
+    return () => clearInterval(typingInterval);
+  }, []);
 
   useEffect(() => {
     if (!selectedLocation) {
@@ -190,13 +207,21 @@ const Setup = () => {
           {/* Avatar and Intro Message */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-center">
             <div className="flex justify-center">
-              <div className="w-64 h-64 bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-4 flex items-center justify-center border-2 border-primary/20">
-                <TerranautAvatar />
+              <div className="w-64 h-64 rounded-xl flex items-center justify-center overflow-hidden bg-transparent">
+                <video 
+                  src={terraAvatar} 
+                  autoPlay 
+                  loop 
+                  muted 
+                  playsInline
+                  className="w-full h-full object-cover rounded-lg"
+                />
               </div>
             </div>
             <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl p-6 border-2 border-primary/20">
               <p className="text-lg font-medium text-card-foreground leading-relaxed">
-                Let's add the crop you want to grow and choose the period - pay attention that's based on the past data!
+                {displayedText}
+                <span className="animate-pulse">|</span>
               </p>
             </div>
           </div>

@@ -733,7 +733,7 @@ const Game = () => {
         </div>
 
         {/* Activity Log Compact */}
-        <div className="mt-4 w-full max-w-sm">
+        <div className="mt-2 w-full max-w-sm">
           <div 
             className="bg-card/95 backdrop-blur rounded-lg p-2 cursor-pointer hover:bg-card transition-colors"
             onClick={() => setIsLogExpanded(!isLogExpanded)}

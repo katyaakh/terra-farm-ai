@@ -5,7 +5,7 @@ const screens = [
   {
     icon: Sparkles,
     title: "Welcome",
-    gradient: "from-purple-600 via-purple-500 to-purple-400",
+    gradient: "from-primary via-accent to-primary/80",
     features: [
       "Terra AI avatar with animated welcome",
       "Choose: Game Simulator or Data Collection",
@@ -17,7 +17,7 @@ const screens = [
   {
     icon: Settings,
     title: "Setup",
-    gradient: "from-pink-600 via-pink-500 to-pink-400",
+    gradient: "from-secondary via-secondary/90 to-secondary/70",
     features: [
       "Farm name & size configuration",
       "Location selection (5 Spanish regions)",
@@ -30,7 +30,7 @@ const screens = [
   {
     icon: Gamepad2,
     title: "Playing/Monitoring",
-    gradient: "from-blue-600 via-blue-500 to-blue-400",
+    gradient: "from-accent via-primary to-accent/80",
     features: [
       "Real-time NASA satellite data indicators",
       "Budget, Water Reserve, Environmental Score",

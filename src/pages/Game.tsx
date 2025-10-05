@@ -512,7 +512,7 @@ const Game = () => {
 
         <div className="grid grid-cols-3 gap-3">
           {/* SMAP Soil Moisture */}
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 flex flex-wrap">
             <div className="flex items-center gap-2 mb-2">
               <Droplet className="w-4 h-4 text-blue-600" />
               <div>

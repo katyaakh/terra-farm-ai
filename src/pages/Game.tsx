@@ -444,7 +444,7 @@ const Game = () => {
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-white">Day {currentDay}</p>
-            <p className="text-xs text-muted-foreground">of {state.crop.growthDays}</p>
+            <p className="text-xs text-white">of {state.crop.growthDays}</p>
           </div>
         </div>
         
